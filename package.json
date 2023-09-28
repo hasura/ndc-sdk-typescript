@@ -15,5 +15,9 @@
     "commander": "^11.0.0",
     "fastify": "^4.23.2",
     "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^13.1.1",
+    "ts-node": "^10.9.1"
   }
 }

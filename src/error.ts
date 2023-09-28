@@ -10,7 +10,7 @@ type ErrorCode =
 
 export class ConnectorError extends Error {
   statusCode: ErrorCode;
-  message: ErrorResponse["message"];
+  message!: ErrorResponse["message"];
   details?: ErrorResponse["details"];
 
   constructor(

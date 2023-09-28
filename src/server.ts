@@ -17,7 +17,25 @@ import { SchemaResponse } from "../typegen/generated/typescript/SchemaResponse";
 import { MutationResponse } from "../typegen/generated/typescript/MutationResponse";
 import { MutationRequest } from "../typegen/generated/typescript/MutationRequest";
 import { QueryRequest } from "../typegen/generated/typescript/QueryRequest";
-import { ErrorResponse } from "../typegen/generated/typescript/ErrorResponse";
+// import { ErrorResponse } from "../typegen/generated/typescript/ErrorResponse"; // unused
+
+import _, { Options as AjvOptions } from "ajv";
+
+// Create custom Ajv options
+const customAjvOptions: AjvOptions = {
+  allErrors: true,
+  removeAdditional: true,
+  formats: {
+    uint32: {
+      validate: (data: any) => {
+        return (
+          typeof data === "number" && data >= 0 && data <= 4294967295 && Number.isInteger(data)
+        );
+      },
+      type: "number",
+    },
+  }
+};
 
 const errorResponses = {
   400: ErrorResponseSchema,
@@ -49,6 +67,9 @@ export async function start_server<Configuration, State>(
 
   const server = Fastify({
     logger: true,
+    ajv: {
+      customOptions: customAjvOptions
+    }
   });
 
   server.get(
@@ -96,7 +117,7 @@ export async function start_server<Configuration, State>(
         body: QueryRequestSchema,
         response: {
           200: QueryResponseSchema,
-          ...errorResponses,
+          ...errorResponses // Since the ErrorResponse requires details!
         },
       },
     },
@@ -154,7 +175,12 @@ export async function start_server<Configuration, State>(
   );
 
   server.setErrorHandler(function (error, request, reply) {
-    if (error instanceof ConnectorError) {
+    if (error.validation) {
+      reply.status(400).send({
+        message: "Validation Error",
+        details: error.validation
+      });
+    } else if (error instanceof ConnectorError) {
       // Log error
       this.log.error(error);
       // Send error response
@@ -165,6 +191,7 @@ export async function start_server<Configuration, State>(
     } else {
       reply.status(500).send({
         message: error.message,
+        details: "" // Details are required!
       });
     }
   });

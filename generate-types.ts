@@ -16,8 +16,8 @@ async function generate() {
   console.log("Generating types...");
   for (const schema of schemas) {
     writeFileSync(
-      `./schemas/${schema}.d.ts`,
-      await compileFromFile(`../api_schemas/generated/${schema}.schema.json`)
+      `schemas/${schema}.d.ts`,
+      await compileFromFile(`typegen/generated/json_schema/${schema}.schema.json`)
     );
   }
   console.log("done!");
