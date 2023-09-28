@@ -6,7 +6,7 @@ import { ConnectorError } from "./error";
 
 import ErrorResponseSchema from "../typegen/generated/json_schema/ErrorResponse.schema.json";
 
-interface ConfigurationServerOptions {
+export interface ConfigurationServerOptions {
   port: number;
 }
 

@@ -1,7 +1,10 @@
 import { Connector } from "./connector";
 import { Command, Option, InvalidOptionArgumentError } from "commander";
-import { start_server } from "./server";
-import { start_configuration_server } from "./configuration_server";
+import { ServerOptions, start_server } from "./server";
+import {
+  ConfigurationServerOptions,
+  start_configuration_server,
+} from "./configuration_server";
 
 export function start<Configuration, State>(
   connector: Connector<Configuration, State>
@@ -34,7 +37,7 @@ function serve_command<Configuration, State>(
     )
     .addOption(new Option("--otlp_endpoint <endpoint>").env("OTLP_ENDPOINT"))
     .addOption(new Option("--service-name <name>").env("OTEL_SERVICE_NAME"))
-    .action(async (options) => {
+    .action(async (options: ServerOptions) => {
       await start_server(connector, options);
     });
 }
@@ -50,13 +53,13 @@ function configuration_command<Configuration, State>(
           .default(9100)
           .argParser(parseIntOption)
       )
-      .action(async (options) => {
+      .action(async (options: ConfigurationServerOptions) => {
         await start_configuration_server(connector, options);
       })
   );
 }
 
-function parseIntOption(value, previous) {
+function parseIntOption(value: string, previous: number): number {
   // parseInt takes a string and a radix
   const parsedValue = parseInt(value, 10);
   if (isNaN(parsedValue)) {

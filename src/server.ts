@@ -27,7 +27,7 @@ const errorResponses = {
   501: ErrorResponseSchema,
 };
 
-interface ServerOptions {
+export interface ServerOptions {
   configuration: string;
   port: number;
   serviceTokenSecret: string | null;
