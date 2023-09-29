@@ -6,8 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "build",
-    "build": "tsc -b ./tsconfig.json"
+    "install": "tsc -b ./tsconfig.json"
   },
   "keywords": [],
   "author": "",
