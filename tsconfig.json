@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "lib": [
       "es2015"
     ],
@@ -10,14 +10,14 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": ".",
+    "outDir": "dist",
     "preserveConstEnums": true,
     "sourceMap": true,
     "strictNullChecks": true,
     "target": "es2016",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
   },
   "files": [
     "./src/index.ts"

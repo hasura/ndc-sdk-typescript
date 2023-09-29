@@ -28,12 +28,15 @@ const customAjvOptions: AjvOptions = {
     uint32: {
       validate: (data: any) => {
         return (
-          typeof data === "number" && data >= 0 && data <= 4294967295 && Number.isInteger(data)
+          typeof data === "number" &&
+          data >= 0 &&
+          data <= 4294967295 &&
+          Number.isInteger(data)
         );
       },
       type: "number",
     },
-  }
+  },
 };
 
 const errorResponses = {
@@ -67,8 +70,8 @@ export async function start_server<Configuration, State>(
   const server = Fastify({
     logger: true,
     ajv: {
-      customOptions: customAjvOptions
-    }
+      customOptions: customAjvOptions,
+    },
   });
 
   server.get(
@@ -81,16 +84,16 @@ export async function start_server<Configuration, State>(
         },
       },
     },
-    (request: FastifyRequest): CapabilitiesResponse => {
+    (_request: FastifyRequest): CapabilitiesResponse => {
       return connector.get_capabilities(configuration);
     }
   );
 
-  server.get("/health", (request): Promise<undefined> => {
+  server.get("/health", (_request): Promise<undefined> => {
     return connector.health_check(configuration, state);
   });
 
-  server.get("/metrics", (request) => {
+  server.get("/metrics", (_request) => {
     return connector.fetch_metrics(configuration, state);
   });
 
@@ -104,7 +107,7 @@ export async function start_server<Configuration, State>(
         },
       },
     },
-    (request): SchemaResponse => {
+    (_request): SchemaResponse => {
       return connector.get_schema(configuration);
     }
   );
@@ -116,7 +119,7 @@ export async function start_server<Configuration, State>(
         body: QueryRequestSchema,
         response: {
           200: QueryResponseSchema,
-          ...errorResponses
+          ...errorResponses,
         },
       },
     },
@@ -173,11 +176,12 @@ export async function start_server<Configuration, State>(
     }
   );
 
-  server.setErrorHandler(function (error, request, reply) {
+  server.setErrorHandler(function (error, _request, reply) {
     if (error.validation) {
       reply.status(400).send({
-        message: "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
-        details: error.validation
+        message:
+          "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
+        details: error.validation,
       });
     } else if (error instanceof ConnectorError) {
       // Log error
@@ -190,7 +194,7 @@ export async function start_server<Configuration, State>(
     } else {
       reply.status(500).send({
         message: error.message,
-        details: {}
+        details: {},
       });
     }
   });

@@ -36,7 +36,9 @@ export async function start_configuration_server<Configuration, State>(
         },
       },
     },
-    async function get_schema(request: FastifyRequest): Promise<Configuration> {
+    async function get_schema(
+      _request: FastifyRequest
+    ): Promise<Configuration> {
       return connector.make_empty_configuration();
     }
   );
@@ -98,11 +100,12 @@ export async function start_configuration_server<Configuration, State>(
     }
   );
 
-  server.setErrorHandler(function (error, request, reply) {
+  server.setErrorHandler(function (error, _request, reply) {
     if (error.validation) {
       reply.status(400).send({
-        message: "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
-        details: error.validation
+        message:
+          "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
+        details: error.validation,
       });
     } else if (error instanceof ConnectorError) {
       // Log error
@@ -115,7 +118,7 @@ export async function start_configuration_server<Configuration, State>(
     } else {
       reply.status(500).send({
         message: error.message,
-        details: {}
+        details: {},
       });
     }
   });
