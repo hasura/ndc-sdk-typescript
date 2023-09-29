@@ -4,21 +4,23 @@ import Fastify, { FastifyRequest } from "fastify";
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
 
-import CapabilitiesResponseSchema from "../typegen/generated/json_schema/CapabilitiesResponse.schema.json";
-import SchemaResponseSchema from "../typegen/generated/json_schema/SchemaResponse.schema.json";
-import QueryRequestSchema from "../typegen/generated/json_schema/QueryRequest.schema.json";
-import QueryResponseSchema from "../typegen/generated/json_schema/QueryResponse.schema.json";
-import ExplainResponseSchema from "../typegen/generated/json_schema/ExplainResponse.schema.json";
-import MutationRequestSchema from "../typegen/generated/json_schema/MutationRequest.schema.json";
-import MutationResponseSchema from "../typegen/generated/json_schema/MutationResponse.schema.json";
-import ErrorResponseSchema from "../typegen/generated/json_schema/ErrorResponse.schema.json";
-import { CapabilitiesResponse } from "../typegen/generated/typescript/CapabilitiesResponse";
-import { SchemaResponse } from "../typegen/generated/typescript/SchemaResponse";
-import { MutationResponse } from "../typegen/generated/typescript/MutationResponse";
-import { MutationRequest } from "../typegen/generated/typescript/MutationRequest";
-import { QueryRequest } from "../typegen/generated/typescript/QueryRequest";
+import {
+  CapabilitiesResponseSchema,
+  SchemaResponseSchema,
+  QueryRequestSchema,
+  QueryResponseSchema,
+  ExplainResponseSchema,
+  MutationRequestSchema,
+  MutationResponseSchema,
+  ErrorResponseSchema,
+  CapabilitiesResponse,
+  SchemaResponse,
+  MutationResponse,
+  MutationRequest,
+  QueryRequest,
+} from "./generated";
 
-import _, { Options as AjvOptions } from "ajv";
+import { Options as AjvOptions } from "ajv";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {

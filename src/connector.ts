@@ -1,10 +1,13 @@
-import { CapabilitiesResponse } from "../typegen/generated/typescript/CapabilitiesResponse";
-import { QueryRequest } from "../typegen/generated/typescript/QueryRequest";
-import { QueryResponse } from "../typegen/generated/typescript/QueryResponse";
-import { SchemaResponse } from "../typegen/generated/typescript/SchemaResponse";
-import { ExplainResponse } from "../typegen/generated/typescript/ExplainResponse";
-import { MutationRequest } from "../typegen/generated/typescript/MutationRequest";
-import { MutationResponse } from "../typegen/generated/typescript/MutationResponse";
+import {
+  CapabilitiesResponse,
+  QueryRequest,
+  QueryResponse,
+  SchemaResponse,
+  ExplainResponse,
+  MutationRequest,
+  MutationResponse,
+} from "./generated";
+
 import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 
 export interface Connector<Configuration, State> {

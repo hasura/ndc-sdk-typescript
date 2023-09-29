@@ -16,10 +16,13 @@ async function generate() {
   console.log("Generating types...");
   for (const schema of schemas) {
     writeFileSync(
-      `../generated/typescript/${schema}.ts`,
-      await compileFromFile(`../generated/json_schema/${schema}.schema.json`, {
-        additionalProperties: false,
-      })
+      `../../src/generated/typescript/${schema}.ts`,
+      await compileFromFile(
+        `../../src/generated/json_schema/${schema}.schema.json`,
+        {
+          additionalProperties: false,
+        }
+      )
     );
   }
   console.log("done!");

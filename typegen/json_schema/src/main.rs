@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn generate_schema<T: JsonSchema>(name: &str) -> Result<(), Box<dyn Error>> {
     fs::write(
-        format!("./typegen/generated/json_schema/{name}.schema.json"),
+        format!("./src/generated/json_schema/{name}.schema.json"),
         serde_json::to_string_pretty(&schema_for!(T))?,
     )?;
     Ok(())

@@ -4,7 +4,7 @@ import JSONSchema, { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
 
-import ErrorResponseSchema from "../typegen/generated/json_schema/ErrorResponse.schema.json";
+import { ErrorResponseSchema } from "./generated";
 
 export interface ConfigurationServerOptions {
   port: number;

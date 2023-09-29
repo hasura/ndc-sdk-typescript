@@ -4,6 +4,12 @@ This SDK is mostly analogous to the Rust SDK, except where necessary.
 
 All functions of the Connector interface are analogous to their Rust counterparts, with the addition of `get_configuration_schema` which does exactly what it sounds like.
 
+## Installing
+
+```sh
+npm install https://github.com/hasura/ndc-sdk-typescript
+```
+
 ## Using this SDK
 
 The SDK exports a `start` function, which takes a `connector` object, that is an object that implements the `Connector` interface defined in `connector.ts`

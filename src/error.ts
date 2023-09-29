@@ -1,4 +1,4 @@
-import { ErrorResponse } from "../typegen/generated/typescript/ErrorResponse";
+import { ErrorResponse } from "./generated";
 
 // ref: https://hasura.github.io/ndc-spec/specification/error-handling.html
 type ErrorCode =

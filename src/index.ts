@@ -7,7 +7,7 @@ import {
 } from "./configuration_server";
 
 export * from "./error";
-export * from "./schemas";
+export * from "./generated";
 export { Connector };
 
 /**
