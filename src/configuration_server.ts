@@ -99,17 +99,23 @@ export async function start_configuration_server<Configuration, State>(
   );
 
   server.setErrorHandler(function (error, request, reply) {
-    if (error instanceof ConnectorError) {
+    if (error.validation) {
+      reply.status(400).send({
+        message: "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
+        details: error.validation
+      });
+    } else if (error instanceof ConnectorError) {
       // Log error
       this.log.error(error);
       // Send error response
       reply.status(error.statusCode).send({
         message: error.message,
-        details: error.details,
+        details: error.details ?? {},
       });
     } else {
       reply.status(500).send({
         message: error.message,
+        details: {}
       });
     }
   });

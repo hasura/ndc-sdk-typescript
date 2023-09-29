@@ -17,7 +17,24 @@ import { SchemaResponse } from "../typegen/generated/typescript/SchemaResponse";
 import { MutationResponse } from "../typegen/generated/typescript/MutationResponse";
 import { MutationRequest } from "../typegen/generated/typescript/MutationRequest";
 import { QueryRequest } from "../typegen/generated/typescript/QueryRequest";
-import { ErrorResponse } from "../typegen/generated/typescript/ErrorResponse";
+
+import _, { Options as AjvOptions } from "ajv";
+
+// Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
+const customAjvOptions: AjvOptions = {
+  allErrors: true,
+  removeAdditional: true,
+  formats: {
+    uint32: {
+      validate: (data: any) => {
+        return (
+          typeof data === "number" && data >= 0 && data <= 4294967295 && Number.isInteger(data)
+        );
+      },
+      type: "number",
+    },
+  }
+};
 
 const errorResponses = {
   400: ErrorResponseSchema,
@@ -49,6 +66,9 @@ export async function start_server<Configuration, State>(
 
   const server = Fastify({
     logger: true,
+    ajv: {
+      customOptions: customAjvOptions
+    }
   });
 
   server.get(
@@ -96,7 +116,7 @@ export async function start_server<Configuration, State>(
         body: QueryRequestSchema,
         response: {
           200: QueryResponseSchema,
-          ...errorResponses,
+          ...errorResponses
         },
       },
     },
@@ -154,17 +174,23 @@ export async function start_server<Configuration, State>(
   );
 
   server.setErrorHandler(function (error, request, reply) {
-    if (error instanceof ConnectorError) {
+    if (error.validation) {
+      reply.status(400).send({
+        message: "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
+        details: error.validation
+      });
+    } else if (error instanceof ConnectorError) {
       // Log error
       this.log.error(error);
       // Send error response
       reply.status(error.statusCode).send({
         message: error.message,
-        details: error.details,
+        details: error.details ?? {},
       });
     } else {
       reply.status(500).send({
         message: error.message,
+        details: {}
       });
     }
   });
