@@ -1,4 +1,4 @@
-import { ErrorResponse } from "../schemas/ErrorResponse";
+import { ErrorResponse } from "../typegen/generated/typescript/ErrorResponse";
 
 // ref: https://hasura.github.io/ndc-spec/specification/error-handling.html
 type ErrorCode =
@@ -10,7 +10,6 @@ type ErrorCode =
 
 export class ConnectorError extends Error {
   statusCode: ErrorCode;
-  message!: ErrorResponse["message"];
   details?: ErrorResponse["details"];
 
   constructor(
