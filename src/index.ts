@@ -70,7 +70,7 @@ function configuration_command<Configuration, State>(
   );
 }
 
-function parseIntOption(value: string, previous: number): number {
+function parseIntOption(value: string, _previous: number): number {
   // parseInt takes a string and a radix
   const parsedValue = parseInt(value, 10);
   if (isNaN(parsedValue)) {

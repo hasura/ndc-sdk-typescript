@@ -14,7 +14,10 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es2016"
+    "target": "es2016",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true
   },
   "files": [
     "./src/index.ts"

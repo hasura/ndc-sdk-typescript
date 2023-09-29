@@ -28,17 +28,18 @@ export {
   BinaryComparisonOperator,
   ComparisonValue,
   BinaryArrayComparisonOperator,
-  ExistsInCollection, RowUpdate,
+  ExistsInCollection,
+  RowUpdate,
   RelationshipType,
   CollectionInsertSchema,
   OrderBy,
   OrderByElement,
-  PathElement
+  PathElement,
 } from "../typegen/generated/typescript/MutationRequest";
 export {
-    MutationResponse,
-    MutationOperationResults,
-    RowFieldValue
+  MutationResponse,
+  MutationOperationResults,
+  RowFieldValue,
 } from "../typegen/generated/typescript/MutationResponse";
 export {
   CapabilitiesResponseSchema,
@@ -48,5 +49,5 @@ export {
   ExplainResponseSchema,
   MutationRequestSchema,
   MutationResponseSchema,
-  ErrorResponseSchema
+  ErrorResponseSchema,
 };
