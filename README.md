@@ -6,8 +6,26 @@ All functions of the Connector interface are analogous to their Rust counterpart
 
 ## Installing
 
+### From NPM
+
+Note: not yet available!
+
+```sh
+npm install @hasura/ndc-sdk-typescript
+```
+
+### From this repo:
+
+The repo does not include build artifacts, so you'll need to run the build step:
+
 ```sh
 npm install https://github.com/hasura/ndc-sdk-typescript
+
+cd node_modules/ndc-sdk-typescript
+
+npm install
+
+npm run build
 ```
 
 ## Using this SDK
@@ -27,3 +45,11 @@ start(connector);
 ```
 
 Please refer to the [NDC Spec](https://hasura.github.io/ndc-spec/) for details on implementing the Connector interface.
+
+## Publishing a new version of the SDK to NPM
+
+```sh
+npm run build
+```
+
+???
