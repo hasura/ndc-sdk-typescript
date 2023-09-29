@@ -5,7 +5,10 @@ import {
   ConfigurationServerOptions,
   start_configuration_server,
 } from "./configuration_server";
-
+export * from "./error";
+export {
+  Connector
+}
 export function start<Configuration, State>(
   connector: Connector<Configuration, State>
 ) {

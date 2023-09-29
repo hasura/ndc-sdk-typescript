@@ -11,7 +11,6 @@ export * from "../typegen/generated/typescript/SchemaResponse";
 export * from "../typegen/generated/typescript/QueryRequest";
 export * from "../typegen/generated/typescript/QueryResponse";
 export * from "../typegen/generated/typescript/ExplainResponse";
-export * from "../src/error";
 export {
   MutationRequest,
   MutationOperation,
