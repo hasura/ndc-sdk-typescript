@@ -10,7 +10,6 @@ export interface MutationResponse {
    * The results of each mutation operation, in the same order as they were received
    */
   operation_results: MutationOperationResults[];
-  [k: string]: unknown;
 }
 export interface MutationOperationResults {
   /**
@@ -25,7 +24,6 @@ export interface MutationOperationResults {
         [k: string]: RowFieldValue;
       }[]
     | null;
-  [k: string]: unknown;
 }
 export interface RowFieldValue {
   [k: string]: unknown;

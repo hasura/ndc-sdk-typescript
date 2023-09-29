@@ -9,17 +9,14 @@ export type RelationshipArgument =
   | {
       name: string;
       type: "variable";
-      [k: string]: unknown;
     }
   | {
       type: "literal";
       value: unknown;
-      [k: string]: unknown;
     }
   | {
       name: string;
       type: "column";
-      [k: string]: unknown;
     };
 export type RelationshipType = "object" | "array";
 export type InsertFieldSchema =
@@ -29,7 +26,6 @@ export type InsertFieldSchema =
        */
       relationship: string;
       type: "array_relation";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -37,7 +33,6 @@ export type InsertFieldSchema =
        */
       column: string;
       type: "column";
-      [k: string]: unknown;
     }
   | {
       insertion_order: ObjectRelationInsertionOrder;
@@ -46,7 +41,6 @@ export type InsertFieldSchema =
        */
       relationship: string;
       type: "object_relation";
-      [k: string]: unknown;
     };
 export type ObjectRelationInsertionOrder = "before_parent" | "after_parent";
 export type MutationOperation =
@@ -63,7 +57,6 @@ export type MutationOperation =
       } | null;
       type: "delete";
       where?: Expression | null;
-      [k: string]: unknown;
     }
   | {
       /**
@@ -84,7 +77,6 @@ export type MutationOperation =
         [k: string]: unknown;
       }[];
       type: "insert";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -104,7 +96,6 @@ export type MutationOperation =
        */
       updates: RowUpdate[];
       where?: Expression | null;
-      [k: string]: unknown;
     }
   | {
       /**
@@ -124,13 +115,11 @@ export type MutationOperation =
        */
       name: string;
       type: "procedure";
-      [k: string]: unknown;
     };
 export type Field =
   | {
       column: string;
       type: "column";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -145,7 +134,6 @@ export type Field =
        */
       relationship: string;
       type: "relationship";
-      [k: string]: unknown;
     };
 export type Aggregate =
   | {
@@ -158,7 +146,6 @@ export type Aggregate =
        */
       distinct: boolean;
       type: "column_count";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -170,11 +157,9 @@ export type Aggregate =
        */
       function: string;
       type: "single_column";
-      [k: string]: unknown;
     }
   | {
       type: "star_count";
-      [k: string]: unknown;
     };
 export type OrderDirection = "asc" | "desc";
 export type OrderByTarget =
@@ -188,7 +173,6 @@ export type OrderByTarget =
        */
       path: PathElement[];
       type: "column";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -204,7 +188,6 @@ export type OrderByTarget =
        */
       path: PathElement[];
       type: "single_column_aggregate";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -212,49 +195,41 @@ export type OrderByTarget =
        */
       path: PathElement[];
       type: "star_count_aggregate";
-      [k: string]: unknown;
     };
 export type Expression =
   | {
       expressions: Expression[];
       type: "and";
-      [k: string]: unknown;
     }
   | {
       expressions: Expression[];
       type: "or";
-      [k: string]: unknown;
     }
   | {
       expression: Expression;
       type: "not";
-      [k: string]: unknown;
     }
   | {
       column: ComparisonTarget;
       operator: UnaryComparisonOperator;
       type: "unary_comparison_operator";
-      [k: string]: unknown;
     }
   | {
       column: ComparisonTarget;
       operator: BinaryComparisonOperator;
       type: "binary_comparison_operator";
       value: ComparisonValue;
-      [k: string]: unknown;
     }
   | {
       column: ComparisonTarget;
       operator: BinaryArrayComparisonOperator;
       type: "binary_array_comparison_operator";
       values: ComparisonValue[];
-      [k: string]: unknown;
     }
   | {
       in_collection: ExistsInCollection;
       type: "exists";
       where: Expression;
-      [k: string]: unknown;
     };
 export type ComparisonTarget =
   | {
@@ -267,7 +242,6 @@ export type ComparisonTarget =
        */
       path: PathElement[];
       type: "column";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -275,34 +249,28 @@ export type ComparisonTarget =
        */
       name: string;
       type: "root_collection_column";
-      [k: string]: unknown;
     };
 export type UnaryComparisonOperator = "is_null";
 export type BinaryComparisonOperator =
   | {
       type: "equal";
-      [k: string]: unknown;
     }
   | {
       name: string;
       type: "other";
-      [k: string]: unknown;
     };
 export type ComparisonValue =
   | {
       column: ComparisonTarget;
       type: "column";
-      [k: string]: unknown;
     }
   | {
       type: "scalar";
       value: unknown;
-      [k: string]: unknown;
     }
   | {
       name: string;
       type: "variable";
-      [k: string]: unknown;
     };
 export type BinaryArrayComparisonOperator = "in";
 export type ExistsInCollection =
@@ -315,7 +283,6 @@ export type ExistsInCollection =
       };
       relationship: string;
       type: "related";
-      [k: string]: unknown;
     }
   | {
       /**
@@ -329,7 +296,6 @@ export type ExistsInCollection =
        */
       collection: string;
       type: "unrelated";
-      [k: string]: unknown;
     };
 export type RowUpdate =
   | {
@@ -345,7 +311,6 @@ export type RowUpdate =
       value: {
         [k: string]: unknown;
       };
-      [k: string]: unknown;
     }
   | {
       /**
@@ -359,7 +324,6 @@ export type RowUpdate =
       value: {
         [k: string]: unknown;
       };
-      [k: string]: unknown;
     };
 
 export interface MutationRequest {
@@ -377,7 +341,6 @@ export interface MutationRequest {
    * The mutation operations to perform
    */
   operations: MutationOperation[];
-  [k: string]: unknown;
 }
 export interface Relationship {
   /**
@@ -401,7 +364,6 @@ export interface Relationship {
    * The name of a collection
    */
   target_collection: string;
-  [k: string]: unknown;
 }
 export interface CollectionInsertSchema {
   /**
@@ -414,7 +376,6 @@ export interface CollectionInsertSchema {
   fields: {
     [k: string]: InsertFieldSchema;
   };
-  [k: string]: unknown;
 }
 export interface Query {
   /**
@@ -439,19 +400,16 @@ export interface Query {
   offset?: number | null;
   order_by?: OrderBy | null;
   where?: Expression | null;
-  [k: string]: unknown;
 }
 export interface OrderBy {
   /**
    * The elements to order by, in priority order
    */
   elements: OrderByElement[];
-  [k: string]: unknown;
 }
 export interface OrderByElement {
   order_direction: OrderDirection;
   target: OrderByTarget;
-  [k: string]: unknown;
 }
 export interface PathElement {
   /**
@@ -468,5 +426,4 @@ export interface PathElement {
    * The name of the relationship to follow
    */
   relationship: string;
-  [k: string]: unknown;
 }

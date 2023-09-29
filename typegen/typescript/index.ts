@@ -17,7 +17,9 @@ async function generate() {
   for (const schema of schemas) {
     writeFileSync(
       `../generated/typescript/${schema}.d.ts`,
-      await compileFromFile(`../generated/json_schema/${schema}.schema.json`)
+      await compileFromFile(`../generated/json_schema/${schema}.schema.json`, {
+        additionalProperties: false,
+      })
     );
   }
   console.log("done!");

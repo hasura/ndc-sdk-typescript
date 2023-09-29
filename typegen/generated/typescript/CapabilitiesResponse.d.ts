@@ -8,7 +8,6 @@
 export interface CapabilitiesResponse {
   capabilities: Capabilities;
   versions: string;
-  [k: string]: unknown;
 }
 /**
  * Describes the features of the specification which a data connector implements.
@@ -18,7 +17,6 @@ export interface Capabilities {
   mutations?: MutationCapabilities | null;
   query?: QueryCapabilities | null;
   relationships?: unknown;
-  [k: string]: unknown;
 }
 export interface MutationCapabilities {
   /**
@@ -28,7 +26,6 @@ export interface MutationCapabilities {
     [k: string]: unknown;
   };
   returning?: unknown;
-  [k: string]: unknown;
 }
 export interface QueryCapabilities {
   /**
@@ -49,5 +46,4 @@ export interface QueryCapabilities {
   relation_comparisons?: {
     [k: string]: unknown;
   };
-  [k: string]: unknown;
 }

@@ -15,7 +15,6 @@ export type Type =
        */
       name: string;
       type: "named";
-      [k: string]: unknown;
     }
   | {
       type: "nullable";
@@ -23,7 +22,6 @@ export type Type =
        * The type of the non-null inhabitants of this type
        */
       underlying_type: Type;
-      [k: string]: unknown;
     }
   | {
       /**
@@ -31,7 +29,6 @@ export type Type =
        */
       element_type: Type;
       type: "array";
-      [k: string]: unknown;
     };
 
 export interface SchemaResponse {
@@ -59,7 +56,6 @@ export interface SchemaResponse {
   scalar_types: {
     [k: string]: ScalarType;
   };
-  [k: string]: unknown;
 }
 export interface CollectionInfo {
   /**
@@ -106,7 +102,6 @@ export interface CollectionInfo {
    * The set of names of updateable columns, or null if updates are not supported
    */
   updatable_columns?: string[] | null;
-  [k: string]: unknown;
 }
 export interface ArgumentInfo {
   /**
@@ -117,7 +112,6 @@ export interface ArgumentInfo {
    * The name of the type of this argument
    */
   type: Type;
-  [k: string]: unknown;
 }
 export interface ForeignKeyConstraint {
   /**
@@ -130,14 +124,12 @@ export interface ForeignKeyConstraint {
    * The name of a collection
    */
   foreign_collection: string;
-  [k: string]: unknown;
 }
 export interface UniquenessConstraint {
   /**
    * A list of columns which this constraint requires to be unique
    */
   unique_columns: string[];
-  [k: string]: unknown;
 }
 export interface FunctionInfo {
   /**
@@ -158,7 +150,6 @@ export interface FunctionInfo {
    * The name of the function's result type
    */
   result_type: Type;
-  [k: string]: unknown;
 }
 /**
  * The definition of an object type
@@ -174,7 +165,6 @@ export interface ObjectType {
   fields: {
     [k: string]: ObjectField;
   };
-  [k: string]: unknown;
 }
 /**
  * The definition of an object field
@@ -188,7 +178,6 @@ export interface ObjectField {
    * The type of this field
    */
   type: Type;
-  [k: string]: unknown;
 }
 export interface ProcedureInfo {
   /**
@@ -209,7 +198,6 @@ export interface ProcedureInfo {
    * The name of the result type
    */
   result_type: Type;
-  [k: string]: unknown;
 }
 /**
  * The definition of a scalar type, i.e. types that can be used as the types of columns.
@@ -233,7 +221,6 @@ export interface ScalarType {
   update_operators: {
     [k: string]: UpdateOperatorDefinition;
   };
-  [k: string]: unknown;
 }
 /**
  * The definition of an aggregation function on a scalar type
@@ -243,7 +230,6 @@ export interface AggregateFunctionDefinition {
    * The scalar or object type of the result of this function
    */
   result_type: Type;
-  [k: string]: unknown;
 }
 /**
  * The definition of a comparison operator on a scalar type
@@ -253,7 +239,6 @@ export interface ComparisonOperatorDefinition {
    * The type of the argument to this operator
    */
   argument_type: Type;
-  [k: string]: unknown;
 }
 /**
  * The definition of an update operator on a scalar type
@@ -263,5 +248,4 @@ export interface UpdateOperatorDefinition {
    * The type of the argument to this operator
    */
   argument_type: Type;
-  [k: string]: unknown;
 }

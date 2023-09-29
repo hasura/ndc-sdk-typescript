@@ -5,10 +5,18 @@ import {
   ConfigurationServerOptions,
   start_configuration_server,
 } from "./configuration_server";
+
 export * from "./error";
-export {
-  Connector
-}
+export * from "./schemas";
+export { Connector };
+
+/**
+ * Starts the connector.
+ * Will read runtimeflags or environment variables to determine startup mode.
+ *
+ * This shoudl be the entrypoint of your connector
+ * @param connector An object that implements the Connector interface
+ */
 export function start<Configuration, State>(
   connector: Connector<Configuration, State>
 ) {

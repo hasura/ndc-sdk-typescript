@@ -25,7 +25,6 @@ export interface RowSet {
         [k: string]: RowFieldValue;
       }[]
     | null;
-  [k: string]: unknown;
 }
 export interface RowFieldValue {
   [k: string]: unknown;

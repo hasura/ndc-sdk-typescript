@@ -12,5 +12,4 @@ export interface ExplainResponse {
   details: {
     [k: string]: string;
   };
-  [k: string]: unknown;
 }

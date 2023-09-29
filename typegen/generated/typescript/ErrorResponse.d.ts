@@ -16,5 +16,4 @@ export interface ErrorResponse {
    * A human-readable summary of the error
    */
   message: string;
-  [k: string]: unknown;
 }
