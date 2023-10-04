@@ -3,3 +3,4 @@ target
 typegen
 Cargo.lock
 Cargo.toml
+example
