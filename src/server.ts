@@ -79,12 +79,12 @@ export async function start_server<Configuration, State>(
   server.get(
     "/capabilities",
     {
-      schema: {
-        response: {
-          200: CapabilitiesResponseSchema,
-          ...errorResponses,
-        },
-      },
+      // schema: {
+      //   response: {
+      //     200: CapabilitiesResponseSchema,
+      //     ...errorResponses,
+      //   },
+      // },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
       return connector.get_capabilities(configuration);
@@ -102,12 +102,12 @@ export async function start_server<Configuration, State>(
   server.get(
     "/schema",
     {
-      schema: {
-        response: {
-          200: SchemaResponseSchema,
-          ...errorResponses,
-        },
-      },
+      // schema: {
+      //   response: {
+      //     200: SchemaResponseSchema,
+      //     ...errorResponses,
+      //   },
+      // },
     },
     (_request): SchemaResponse => {
       return connector.get_schema(configuration);
@@ -117,13 +117,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/query",
     {
-      schema: {
-        body: QueryRequestSchema,
-        response: {
-          200: QueryResponseSchema,
-          ...errorResponses,
-        },
-      },
+      // schema: {
+      //   body: QueryRequestSchema,
+      //   response: {
+      //     200: QueryResponseSchema,
+      //     ...errorResponses,
+      //   },
+      // },
     },
     async (
       request: FastifyRequest<{
@@ -137,13 +137,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/explain",
     {
-      schema: {
-        body: QueryRequestSchema,
-        response: {
-          200: ExplainResponseSchema,
-          ...errorResponses,
-        },
-      },
+      // schema: {
+      //   body: QueryRequestSchema,
+      //   response: {
+      //     200: ExplainResponseSchema,
+      //     ...errorResponses,
+      //   },
+      // },
     },
     (request) => {
       return connector.explain(
@@ -157,13 +157,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/mutation",
     {
-      schema: {
-        body: MutationRequestSchema,
-        response: {
-          200: MutationResponseSchema,
-          ...errorResponses,
-        },
-      },
+      // schema: {
+      //   body: MutationRequestSchema,
+      //   response: {
+      //     200: MutationResponseSchema,
+      //     ...errorResponses,
+      //   },
+      // },
     },
     (
       request: FastifyRequest<{
