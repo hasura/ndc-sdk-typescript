@@ -124,7 +124,7 @@ export async function start_configuration_server<Configuration, State>(
   });
 
   try {
-    await server.listen({ port: options.port });
+    await server.listen({ port: options.port, host: "0.0.0.0" });
   } catch (error) {
     server.log.error(error);
     process.exit(1);

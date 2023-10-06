@@ -76,15 +76,23 @@ export async function start_server<Configuration, State>(
     },
   });
 
+  // temporary: use JSON.stringify instead of https://github.com/fastify/fast-json-stringify
+  // todo: remove this once issue is addressed https://github.com/fastify/fastify/issues/5073
+  server.setSerializerCompiler(
+    ({ schema, method, url, httpStatus, contentType }) => {
+      return (data) => JSON.stringify(data);
+    }
+  );
+
   server.get(
     "/capabilities",
     {
-      // schema: {
-      //   response: {
-      //     200: CapabilitiesResponseSchema,
-      //     ...errorResponses,
-      //   },
-      // },
+      schema: {
+        response: {
+          200: CapabilitiesResponseSchema,
+          ...errorResponses,
+        },
+      },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
       return connector.get_capabilities(configuration);
@@ -102,14 +110,14 @@ export async function start_server<Configuration, State>(
   server.get(
     "/schema",
     {
-      // schema: {
-      //   response: {
-      //     200: SchemaResponseSchema,
-      //     ...errorResponses,
-      //   },
-      // },
+      schema: {
+        response: {
+          200: SchemaResponseSchema,
+          ...errorResponses,
+        },
+      },
     },
-    (_request): SchemaResponse => {
+    (_request): Promise<SchemaResponse> => {
       return connector.get_schema(configuration);
     }
   );
@@ -117,13 +125,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/query",
     {
-      // schema: {
-      //   body: QueryRequestSchema,
-      //   response: {
-      //     200: QueryResponseSchema,
-      //     ...errorResponses,
-      //   },
-      // },
+      schema: {
+        body: QueryRequestSchema,
+        response: {
+          200: QueryResponseSchema,
+          ...errorResponses,
+        },
+      },
     },
     async (
       request: FastifyRequest<{
@@ -137,13 +145,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/explain",
     {
-      // schema: {
-      //   body: QueryRequestSchema,
-      //   response: {
-      //     200: ExplainResponseSchema,
-      //     ...errorResponses,
-      //   },
-      // },
+      schema: {
+        body: QueryRequestSchema,
+        response: {
+          200: ExplainResponseSchema,
+          ...errorResponses,
+        },
+      },
     },
     (request) => {
       return connector.explain(
@@ -157,13 +165,13 @@ export async function start_server<Configuration, State>(
   server.post(
     "/mutation",
     {
-      // schema: {
-      //   body: MutationRequestSchema,
-      //   response: {
-      //     200: MutationResponseSchema,
-      //     ...errorResponses,
-      //   },
-      // },
+      schema: {
+        body: MutationRequestSchema,
+        response: {
+          200: MutationResponseSchema,
+          ...errorResponses,
+        },
+      },
     },
     (
       request: FastifyRequest<{
@@ -202,7 +210,7 @@ export async function start_server<Configuration, State>(
   });
 
   try {
-    await server.listen({ port: options.port });
+    await server.listen({ port: options.port, host: "0.0.0.0" });
   } catch (error) {
     server.log.error(error);
     process.exit(1);
