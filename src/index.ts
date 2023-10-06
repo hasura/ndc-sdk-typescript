@@ -8,7 +8,7 @@ import {
 
 export * from "./error";
 export * from "./generated";
-export { Connector };
+export { Connector, start_configuration_server, start_server };
 
 /**
  * Starts the connector.
@@ -22,13 +22,13 @@ export function start<Configuration, State>(
 ) {
   const program = new Command();
 
-  program.addCommand(serve_command(connector));
-  program.addCommand(configuration_command(connector));
+  program.addCommand(get_serve_command(connector));
+  program.addCommand(get_serve_configuration_command(connector));
 
   program.parseAsync(process.argv).catch(console.error);
 }
 
-function serve_command<Configuration, State>(
+export function get_serve_command<Configuration, State>(
   connector: Connector<Configuration, State>
 ) {
   return new Command("serve")
@@ -53,7 +53,7 @@ function serve_command<Configuration, State>(
     });
 }
 
-function configuration_command<Configuration, State>(
+export function get_serve_configuration_command<Configuration, State>(
   connector: Connector<Configuration, State>
 ) {
   return new Command("configuration").addCommand(
