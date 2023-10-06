@@ -93,11 +93,9 @@ export interface Connector<Configuration, State> {
    *
    * This function implements the [schema endpoint](https://hasura.github.io/ndc-spec/specification/schema/index.html)
    * from the NDC specification.
-   *
-   * This function should resolve from the configuration alone, and is thus syncronous
    * @param configuration
    */
-  get_schema(configuration: Configuration): SchemaResponse;
+  get_schema(configuration: Configuration): Promise<SchemaResponse>;
 
   /**
    * Explain a query by creating an execution plan
