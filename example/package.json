@@ -1,0 +1,21 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node ./src/index.ts",
+    "start-test": "ts-node ./src/test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hasura/ndc-sdk-typescript": "file:..",
+    "fastify": "^4.23.2",
+    "ndc-sdk-typescript": "file:..",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1"
+  }
+}
