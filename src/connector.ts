@@ -10,31 +10,45 @@ import {
 
 import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 
-export interface Connector<Configuration, State> {
+export interface Connector<RawConfiguration, Configuration, State> {
+  /**
+   * Return jsonschema for the raw configuration for this connector
+   */
+  get_raw_configuration_schema(): JSONSchemaObject;
   /**
    * Return jsonschema for the configuration for this connector
    */
   get_configuration_schema(): JSONSchemaObject;
-  /**
-   * Return any read regions defined in the connector's configuration
-   * @param configuration
-   */
-  get_read_regions(configuration: Configuration): string[];
-  /**
-   * Return any write regions defined in the connector's configuration
-   * @param configuration
-   */
-  get_write_regions(configuration: Configuration): string[];
 
-  make_empty_configuration(): Configuration;
-  update_configuration(configuration: Configuration): Promise<Configuration>;
+  /**
+   * Return an empty raw configuration, to be manually filled in by the user to allow connection to the data source.
+   *
+   * The exact shape depends on your connector's configuration. Example:
+   *
+   * ```json
+   * {
+   *   "connection_string": "",
+   *   "tables": []
+   * }
+   * ```
+   */
+  make_empty_configuration(): RawConfiguration;
+  /**
+   * Take a raw configuration, update it where appropriate by connecting to the underlying data source, and otherwise return it as-is
+   * For example, if our configuration includes a list of tables, we may want to fetch an updated list from the data source.
+   * This is also used to "hidrate" an "empty" configuration where a user has provided connection details and little else.
+   * @param rawConfiguration a base raw configuration
+   */
+  update_configuration(
+    rawConfiguration: RawConfiguration
+  ): Promise<RawConfiguration>;
   /**
    * Validate the raw configuration provided by the user,
    * returning a configuration error or a validated [`Connector::Configuration`].
    * @param configuration
    */
   validate_raw_configuration(
-    configuration: Configuration
+    rawConfiguration: RawConfiguration
   ): Promise<Configuration>;
 
   /**

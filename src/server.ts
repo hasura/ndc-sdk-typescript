@@ -57,8 +57,8 @@ export interface ServerOptions {
   serviceName: string | null;
 }
 
-export async function start_server<Configuration, State>(
-  connector: Connector<Configuration, State>,
+export async function start_server<RawConfiguration, Configuration, State>(
+  connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
   const configuration = await get_configuration<Configuration>(
