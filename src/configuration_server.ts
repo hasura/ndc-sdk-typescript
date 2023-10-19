@@ -4,7 +4,7 @@ import JSONSchema, { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
 
-import { ErrorResponseSchema } from "./generated";
+import { ErrorResponseSchema, SchemaResponse } from "./generated";
 
 export interface ConfigurationServerOptions {
   port: number;
@@ -18,8 +18,12 @@ const errorResponses = {
   501: ErrorResponseSchema,
 };
 
-export async function start_configuration_server<Configuration, State>(
-  connector: Connector<Configuration, State>,
+export async function start_configuration_server<
+  RawConfiguration,
+  Configuration,
+  State
+>(
+  connector: Connector<RawConfiguration, Configuration, State>,
   options: ConfigurationServerOptions
 ) {
   const server = Fastify({
@@ -38,7 +42,7 @@ export async function start_configuration_server<Configuration, State>(
     },
     async function get_schema(
       _request: FastifyRequest
-    ): Promise<Configuration> {
+    ): Promise<RawConfiguration> {
       return connector.make_empty_configuration();
     }
   );
@@ -56,12 +60,12 @@ export async function start_configuration_server<Configuration, State>(
     },
     async (
       request: FastifyRequest<{
-        Body: Configuration;
+        Body: RawConfiguration;
       }>
-    ): Promise<Configuration> => {
+    ): Promise<RawConfiguration> => {
       return connector.update_configuration(
-        // type assetion required because Configuration is a generic parameter
-        request.body as Configuration
+        // type assertion required because Configuration is a generic parameter
+        request.body as RawConfiguration
       );
     }
   );
@@ -91,14 +95,22 @@ export async function start_configuration_server<Configuration, State>(
       },
     },
     async (
-      request: FastifyRequest<{ Body: Configuration }>
-    ): Promise<Configuration> => {
-      return connector.validate_raw_configuration(
-        // type assetion required because Configuration is a generic parameter
-        request.body as Configuration
+      request: FastifyRequest<{ Body: RawConfiguration }>
+    ): Promise<{ schema: SchemaResponse; resolved_configuration: string }> => {
+      const resolvedConfiguration = await connector.validate_raw_configuration(
+        // type assertion required because Configuration is a generic parameter
+        request.body as RawConfiguration
       );
+      const schema = await connector.get_schema(resolvedConfiguration);
+
+      return {
+        schema,
+        resolved_configuration: encodeJSON(resolvedConfiguration),
+      };
     }
   );
+
+  server.get("/health", async () => {});
 
   server.setErrorHandler(function (error, _request, reply) {
     if (error.validation) {
@@ -129,4 +141,12 @@ export async function start_configuration_server<Configuration, State>(
     server.log.error(error);
     process.exit(1);
   }
+}
+
+function encodeJSON(payload: unknown): string {
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
+}
+// unused for now, but keeping as reference in case it is needed later.
+function decodeJSON<T>(payload: string): T {
+  return JSON.parse(Buffer.from(payload, "base64").toString("utf8"));
 }

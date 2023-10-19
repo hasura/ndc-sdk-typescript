@@ -17,8 +17,8 @@ export { Connector, start_configuration_server, start_server };
  * This shoudl be the entrypoint of your connector
  * @param connector An object that implements the Connector interface
  */
-export function start<Configuration, State>(
-  connector: Connector<Configuration, State>
+export function start<RawConfiguration, Configuration, State>(
+  connector: Connector<RawConfiguration, Configuration, State>
 ) {
   const program = new Command();
 
@@ -28,8 +28,8 @@ export function start<Configuration, State>(
   program.parseAsync(process.argv).catch(console.error);
 }
 
-export function get_serve_command<Configuration, State>(
-  connector: Connector<Configuration, State>
+export function get_serve_command<RawConfiguration, Configuration, State>(
+  connector: Connector<RawConfiguration, Configuration, State>
 ) {
   return new Command("serve")
     .addOption(
@@ -53,9 +53,11 @@ export function get_serve_command<Configuration, State>(
     });
 }
 
-export function get_serve_configuration_command<Configuration, State>(
-  connector: Connector<Configuration, State>
-) {
+export function get_serve_configuration_command<
+  RawConfiguration,
+  Configuration,
+  State
+>(connector: Connector<RawConfiguration, Configuration, State>) {
   return new Command("configuration").addCommand(
     new Command("serve")
       .addOption(

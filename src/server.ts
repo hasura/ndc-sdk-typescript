@@ -61,8 +61,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
-  const configuration = await get_configuration<Configuration>(
-    options.configuration
+  const data = fs.readFileSync(options.configuration);
+  const rawConfiguration = JSON.parse(data.toString("utf8"));
+  const configuration = await connector.validate_raw_configuration(
+    rawConfiguration
   );
 
   const metrics = {}; // todo
@@ -215,10 +217,4 @@ export async function start_server<RawConfiguration, Configuration, State>(
     server.log.error(error);
     process.exit(1);
   }
-}
-
-function get_configuration<Configuration>(path: string): Configuration {
-  const data = fs.readFileSync(path);
-  const configuration = JSON.parse(data.toString());
-  return configuration as Configuration;
 }
