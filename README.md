@@ -8,8 +8,6 @@ All functions of the Connector interface are analogous to their Rust counterpart
 
 ### From NPM
 
-Note: not yet available!
-
 ```sh
 npm install @hasura/ndc-sdk-typescript
 ```
@@ -48,8 +46,6 @@ Please refer to the [NDC Spec](https://hasura.github.io/ndc-spec/) for details o
 
 ## Publishing a new version of the SDK to NPM
 
-```sh
-npm run build
-```
+Pushing a new version tag will automatically publish the tag to NPM provided that it matches the version specified in `package.json`.
 
-???
+See `.github/workflows/build_test_publish.yaml` for details.

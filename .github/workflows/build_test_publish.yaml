@@ -1,0 +1,51 @@
+name: "Build, Test, Publish"
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - 'main'
+    tags:
+      - v**
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      - run: |
+          PACKAGE_VERSION=`npm version | sed -rn "2 s/.*: '([^']*)'.*/\1/g; 2 p"`
+          TAG=`echo "$GITHUB_REF"| sed -r "s#.*/##g"`
+          echo '$TAG' = "$TAG"
+          echo '$GITHUB_REF' = "$GITHUB_REF"
+          echo '$PACKAGE_VERSION' = "$PACKAGE_VERSION"
+          if [ "$TAG" = "v$PACKAGE_VERSION" ]
+          then
+            echo "Success! Versions match."
+          else
+            echo "Package version (v$PACKAGE_VERSION) must match tag (GITHUB_REF: $GITHUB_REF) in order to publish" 1>&2
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
