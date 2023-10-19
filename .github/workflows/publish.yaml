@@ -19,7 +19,6 @@ jobs:
       - run: |
           PACKAGE_VERSION=`npm version | sed -rn "2 s/.*: '([^']*)'.*/\1/g; 2 p"`
           TAG=`echo "$GITHUB_REF"| sed -r "s#.*/##g"`
-          exit 0 # TODO: Remove
           echo '$GITHUB_REF' = "$GITHUB_REF"
           echo '$PACKAGE_VERSION' = "$PACKAGE_VERSION"
           if [ "$GITHUB_REF" = "v$PACKAGE_VERSION" ]
@@ -30,6 +29,6 @@ jobs:
             exit 1
           fi
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
