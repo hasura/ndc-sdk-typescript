@@ -48,4 +48,4 @@ Please refer to the [NDC Spec](https://hasura.github.io/ndc-spec/) for details o
 
 Pushing a new version tag will automatically publish the tag to NPM provided that it matches the version specified in `package.json`.
 
-See `.github/workflows/publish.yaml` for details.
+See `.github/workflows/build_test_publish.yaml` for details.
