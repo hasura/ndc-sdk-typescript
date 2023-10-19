@@ -1,5 +1,9 @@
 name: Publish Package to npmjs
 on:
+  push:
+    tags:
+      - v**
+      - test-ci-**
   release:
     types: [published]
 jobs:
