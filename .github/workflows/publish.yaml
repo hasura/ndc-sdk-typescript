@@ -18,6 +18,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: |
           PACKAGE_VERSION=`npm version | sed -rn "2 s/.*: '([^']*)'.*/\1/g; 2 p"`
+          TAG=`echo "$GITHUB_REF"| sed -r "s#.*/##g"`
           echo '$GITHUB_REF' = "$GITHUB_REF"
           echo '$PACKAGE_VERSION' = "$PACKAGE_VERSION"
           if [ "$GITHUB_REF" = "v$PACKAGE_VERSION" ]
