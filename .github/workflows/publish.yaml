@@ -1,21 +1,26 @@
 name: Publish Package to npmjs
 on:
-  push:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
     tags:
       - v**
-      - test-ci-**
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          # node-version: '20.x'
+          node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
       - run: |
           PACKAGE_VERSION=`npm version | sed -rn "2 s/.*: '([^']*)'.*/\1/g; 2 p"`
           TAG=`echo "$GITHUB_REF"| sed -r "s#.*/##g"`
