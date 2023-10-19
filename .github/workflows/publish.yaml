@@ -22,6 +22,8 @@ jobs:
           echo '$PACKAGE_VERSION' = "$PACKAGE_VERSION"
           if [ "$GITHUB_REF" = "v$PACKAGE_VERSION" ]
           then
+            echo "Success! Versions match."
+          else
             echo "Package version (v$PACKAGE_VERSION) must match tag (GITHUB_REF: $GITHUB_REF) in order to publish" 1>&2
             exit 1
           fi
