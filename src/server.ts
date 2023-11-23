@@ -21,6 +21,7 @@ import {
 } from "./generated";
 
 import { Options as AjvOptions } from "ajv";
+import { Subscription } from "rxjs";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -217,10 +218,35 @@ export async function start_server<RawConfiguration, Configuration, State>(
   }
 
   if (options.watch) {
+    function subscribeToConnectorStateChanges() {
+      return connector.watch_for_state_change
+        ? connector.watch_for_state_change(serverState.configuration)
+            .subscribe({
+                next: (newConnectorState) => {
+                  serverState = { ...serverState, connectorState: newConnectorState };
+                  server.log.info("Connector state updated")
+                },
+                error: (error) => {
+                  server.log.warn(error, "Connector state update error")
+                }
+            })
+        : null;
+    }
+
+    let connectorWatchSubscription: Subscription | null = null;
+    
     watch_configuration(options.configuration, connector, server.log, newServerState => {
+      connectorWatchSubscription?.unsubscribe();
+
       serverState = newServerState;
+      
+      connectorWatchSubscription = subscribeToConnectorStateChanges();
+      
       server.log.info("Configuration updated")
     })
+
+    connectorWatchSubscription = subscribeToConnectorStateChanges();
+    
     server.log.info("Watch mode enabled")
   }
 }

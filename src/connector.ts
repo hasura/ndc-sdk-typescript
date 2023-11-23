@@ -1,3 +1,4 @@
+import { Observable } from "rxjs";
 import {
   CapabilitiesResponse,
   QueryRequest,
@@ -66,6 +67,24 @@ export interface Connector<RawConfiguration, Configuration, State> {
     configuration: Configuration,
     metrics: unknown
   ): Promise<State>;
+
+  /**
+   * Returns an Observable stream that watches any mutable resources referred to by the Configuration,
+   * and if something changes, emits the new State that matches the changed resource.
+   * 
+   * This is only used when the connector server is used in watch mode during development. The server
+   * will subscribe to the Observable returned by this function and swap the current State for new
+   * States emitted by the Observable. If the Configuration changes during watch mode, the Observable
+   * returned by this function is unsubscribed from, and this function is invoked with the new 
+   * Configuration and the new Observable is subscribed to.
+   * 
+   * This function is optional to implement. If it is not implemented, watch mode on the server
+   * only reloads the State when the Configuration changes.
+   */
+  watch_for_state_change?(
+    configuration: Configuration
+  ): Observable<State>
+
   /**
    *
    * Update any metrics from the state
