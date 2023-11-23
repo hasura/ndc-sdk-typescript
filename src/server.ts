@@ -1,5 +1,5 @@
-import fs from "fs";
-import Fastify, { FastifyRequest } from "fastify";
+import fs from "fs/promises";
+import Fastify, { FastifyBaseLogger, FastifyRequest } from "fastify";
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -55,21 +55,19 @@ export interface ServerOptions {
   serviceTokenSecret: string | null;
   otlpEndpoint: string | null;
   serviceName: string | null;
+  watch: boolean;
+}
+
+type ServerState<Configuration, State> = {
+  configuration: Configuration,
+  connectorState: State
 }
 
 export async function start_server<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
-  const data = fs.readFileSync(options.configuration);
-  const rawConfiguration = JSON.parse(data.toString("utf8"));
-  const configuration = await connector.validate_raw_configuration(
-    rawConfiguration
-  );
-
-  const metrics = {}; // todo
-
-  const state = await connector.try_init_state(configuration, metrics);
+  let serverState = await build_server_state(options.configuration, connector);
 
   const server = Fastify({
     logger: true,
@@ -97,16 +95,16 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return connector.get_capabilities(configuration);
+      return connector.get_capabilities(serverState.configuration);
     }
   );
 
   server.get("/health", (_request): Promise<undefined> => {
-    return connector.health_check(configuration, state);
+    return connector.health_check(serverState.configuration, serverState.connectorState);
   });
 
   server.get("/metrics", (_request) => {
-    return connector.fetch_metrics(configuration, state);
+    return connector.fetch_metrics(serverState.configuration, serverState.connectorState);
   });
 
   server.get(
@@ -120,7 +118,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return connector.get_schema(configuration);
+      return connector.get_schema(serverState.configuration);
     }
   );
 
@@ -140,7 +138,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
         Body: QueryRequest;
       }>
     ) => {
-      return connector.query(configuration, state, request.body);
+      return connector.query(serverState.configuration, serverState.connectorState, request.body);
     }
   );
 
@@ -157,8 +155,8 @@ export async function start_server<RawConfiguration, Configuration, State>(
     },
     (request) => {
       return connector.explain(
-        configuration,
-        state,
+        serverState.configuration,
+        serverState.connectorState,
         request.body as QueryRequest
       );
     }
@@ -181,8 +179,8 @@ export async function start_server<RawConfiguration, Configuration, State>(
       }>
     ): Promise<MutationResponse> => {
       return connector.mutation(
-        configuration,
-        state,
+        serverState.configuration,
+        serverState.connectorState,
         request.body as MutationRequest
       );
     }
@@ -216,5 +214,47 @@ export async function start_server<RawConfiguration, Configuration, State>(
   } catch (error) {
     server.log.error(error);
     process.exit(1);
+  }
+
+  if (options.watch) {
+    watch_configuration(options.configuration, connector, server.log, newServerState => {
+      serverState = newServerState;
+      server.log.info("Configuration updated")
+    })
+    server.log.info("Watch mode enabled")
+  }
+}
+
+async function build_server_state<RawConfiguration, Configuration, State>(
+  configurationFilePath: string, 
+  connector: Connector<RawConfiguration, Configuration, State>
+  ): Promise<ServerState<Configuration, State>> {
+  const data = await fs.readFile(configurationFilePath);
+  const rawConfiguration = JSON.parse(data.toString("utf8"));
+  const configuration = await connector.validate_raw_configuration(rawConfiguration);
+
+  const metrics = {}; // todo
+
+  const state = await connector.try_init_state(configuration, metrics);
+  return {
+    configuration,
+    connectorState: state
+  };
+}
+
+async function watch_configuration<RawConfiguration, Configuration, State>(
+  configurationFilePath: string, 
+  connector: Connector<RawConfiguration, Configuration, State>,
+  logger: FastifyBaseLogger,
+  newServerStateCallback: (newServerState: ServerState<Configuration, State>) => void
+  ): Promise<void> {
+  const watcher = fs.watch(configurationFilePath, { persistent: false /* Watcher does not keep the process running */ })
+  for await (const _event of watcher) {
+    try {
+      const newServerState = await build_server_state(configurationFilePath, connector)
+      newServerStateCallback(newServerState);
+    } catch (e) {
+      logger.warn(e, "Configuration update error")
+    }
   }
 }
