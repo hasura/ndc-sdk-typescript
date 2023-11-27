@@ -37,9 +37,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }?;
     print!("Generating Schema to {path}...");
 
+    let schema_json = serde_json::to_string_pretty(&schema_for!(SchemaRoot))?;
+
     fs::write(
         path,
-        serde_json::to_string_pretty(&schema_for!(SchemaRoot))?,
+        schema_json + "\n",
     )?;
 
     println!("done!");
