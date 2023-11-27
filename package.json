@@ -6,6 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "regenerate-schema": "./typegen/regenerate-schema.sh",
     "build": "tsc"
   },
   "keywords": [],
@@ -19,6 +20,7 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
+    "json-schema-to-typescript": "^13.1.1",
     "typescript": "^5.2.2"
   }
 }

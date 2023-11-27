@@ -1,0 +1,15 @@
+diff --git a/src/schema/schema.generated.ts b/src/schema/schema.generated.ts
+index 941e952..927e2c6 100644
+--- a/src/schema/schema.generated.ts
++++ b/src/schema/schema.generated.ts
+@@ -614,9 +614,7 @@ export interface RowSet {
+       }[]
+     | null;
+ }
+-export interface RowFieldValue {
+-  [k: string]: unknown;
+-}
++export type RowFieldValue = unknown; // Manually corrected :(
+ export interface MutationRequest {
+   /**
+    * The mutation operations to perform

@@ -19,7 +19,7 @@ import {
   MutationResponse,
   MutationRequest,
   QueryRequest,
-} from "./generated";
+} from "./schema";
 
 import { Options as AjvOptions } from "ajv";
 import * as rxjs from "rxjs";
