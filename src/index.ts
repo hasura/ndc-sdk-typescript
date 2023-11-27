@@ -51,6 +51,7 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
     .addOption(
       new Option("--watch", "watch for configuration changes and reload")
         .default(false)
+        .env("WATCH")
     )
     .action(async (options: ServerOptions) => {
       await start_server(connector, options);
