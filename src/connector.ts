@@ -6,7 +6,7 @@ import {
   ExplainResponse,
   MutationRequest,
   MutationResponse,
-} from "./generated";
+} from "./schema";
 
 import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 
@@ -15,10 +15,6 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * Return jsonschema for the raw configuration for this connector
    */
   get_raw_configuration_schema(): JSONSchemaObject;
-  /**
-   * Return jsonschema for the configuration for this connector
-   */
-  get_configuration_schema(): JSONSchemaObject;
 
   /**
    * Return an empty raw configuration, to be manually filled in by the user to allow connection to the data source.
