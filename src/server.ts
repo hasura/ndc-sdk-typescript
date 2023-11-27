@@ -1,5 +1,6 @@
-import fs from "fs";
-import Fastify, { FastifyRequest } from "fastify";
+import fs from "fs/promises";
+import { watch } from "fs";
+import Fastify, { FastifyBaseLogger, FastifyRequest } from "fastify";
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -21,6 +22,7 @@ import {
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
+import * as rxjs from "rxjs";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -55,21 +57,21 @@ export interface ServerOptions {
   serviceTokenSecret: string | null;
   otlpEndpoint: string | null;
   serviceName: string | null;
+  watch: boolean;
+}
+
+type ServerState<Configuration, State> = {
+  configuration: Configuration,
+  connectorState: State
 }
 
 export async function start_server<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
-  const data = fs.readFileSync(options.configuration);
-  const rawConfiguration = JSON.parse(data.toString("utf8"));
-  const configuration = await connector.validate_raw_configuration(
-    rawConfiguration
-  );
-
-  const metrics = {}; // todo
-
-  const state = await connector.try_init_state(configuration, metrics);
+  let serverState = await build_server_state(options.configuration, connector);
+  let connectorWatchSubscription: rxjs.Subscription | null = null;
+  let configurationWatchSubscription: rxjs.Subscription | null = null;
 
   const server = Fastify({
     logger: true,
@@ -97,16 +99,16 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return connector.get_capabilities(configuration);
+      return connector.get_capabilities(serverState.configuration);
     }
   );
 
   server.get("/health", (_request): Promise<undefined> => {
-    return connector.health_check(configuration, state);
+    return connector.health_check(serverState.configuration, serverState.connectorState);
   });
 
   server.get("/metrics", (_request) => {
-    return connector.fetch_metrics(configuration, state);
+    return connector.fetch_metrics(serverState.configuration, serverState.connectorState);
   });
 
   server.get(
@@ -120,7 +122,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return connector.get_schema(configuration);
+      return connector.get_schema(serverState.configuration);
     }
   );
 
@@ -140,7 +142,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
         Body: QueryRequest;
       }>
     ) => {
-      return connector.query(configuration, state, request.body);
+      return connector.query(serverState.configuration, serverState.connectorState, request.body);
     }
   );
 
@@ -157,8 +159,8 @@ export async function start_server<RawConfiguration, Configuration, State>(
     },
     (request) => {
       return connector.explain(
-        configuration,
-        state,
+        serverState.configuration,
+        serverState.connectorState,
         request.body as QueryRequest
       );
     }
@@ -181,8 +183,8 @@ export async function start_server<RawConfiguration, Configuration, State>(
       }>
     ): Promise<MutationResponse> => {
       return connector.mutation(
-        configuration,
-        state,
+        serverState.configuration,
+        serverState.connectorState,
         request.body as MutationRequest
       );
     }
@@ -211,10 +213,92 @@ export async function start_server<RawConfiguration, Configuration, State>(
     }
   });
 
+  server.addHook("onClose", () => {
+    connectorWatchSubscription?.unsubscribe()
+    configurationWatchSubscription?.unsubscribe()
+  });
+
   try {
     await server.listen({ port: options.port, host: "0.0.0.0" });
   } catch (error) {
     server.log.error(error);
     process.exit(1);
   }
+
+  if (options.watch) {
+    function subscribeToConnectorStateChanges() {
+      return connector.watch_for_state_change
+        ? connector.watch_for_state_change(serverState.configuration)
+            .subscribe({
+                next: (newConnectorState) => {
+                  serverState = { ...serverState, connectorState: newConnectorState };
+                  server.log.info("Connector state updated")
+                },
+                error: (error) => {
+                  server.log.warn(error, "Connector state update error")
+                }
+            })
+        : null;
+    }
+
+    let connectorWatchSubscription: rxjs.Subscription | null = null;
+    
+    configurationWatchSubscription = 
+      watch_configuration(options.configuration, connector, server.log)
+        .subscribe(newServerState => {
+          connectorWatchSubscription?.unsubscribe();
+
+          serverState = newServerState;
+          
+          connectorWatchSubscription = subscribeToConnectorStateChanges();
+          
+          server.log.info("Configuration updated")
+        });
+
+    connectorWatchSubscription = subscribeToConnectorStateChanges();
+    
+    server.log.info("Watch mode enabled")
+  }
+}
+
+async function build_server_state<RawConfiguration, Configuration, State>(
+  configurationFilePath: string, 
+  connector: Connector<RawConfiguration, Configuration, State>
+  ): Promise<ServerState<Configuration, State>> {
+  const data = await fs.readFile(configurationFilePath);
+  const rawConfiguration = JSON.parse(data.toString("utf8"));
+  const configuration = await connector.validate_raw_configuration(rawConfiguration);
+
+  const metrics = {}; // todo
+
+  const state = await connector.try_init_state(configuration, metrics);
+  return {
+    configuration,
+    connectorState: state
+  };
+}
+
+function watch_configuration<RawConfiguration, Configuration, State>(
+  configurationFilePath: string, 
+  connector: Connector<RawConfiguration, Configuration, State>,
+  logger: FastifyBaseLogger
+  ): rxjs.Observable<ServerState<Configuration, State>> {
+    return new rxjs.Observable(subscriber => {
+      const watcher = watch(
+        configurationFilePath, 
+        { persistent: false /* Watcher does not keep the process running */ }, 
+        event => subscriber.next(event));
+      
+      return () => watcher.close(); // Unsubscribe function
+    })
+    .pipe(rxjs.debounceTime(200))
+    .pipe(rxjs.mergeMap(async _event => {
+      try {
+        return await build_server_state(configurationFilePath, connector)
+      } catch (e) {
+        logger.warn(e, "Configuration update error");
+        return undefined;
+      }
+    }))
+    .pipe(rxjs.filter((v): v is ServerState<Configuration, State> => v !== undefined));
 }
