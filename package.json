@@ -6,6 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "regenerate-schema": "cargo run ./src/schema/schema.generated.json && json2ts -i ./src/schema/schema.generated.json -o ./src/schema/schema.generated.ts --no-additionalProperties && echo './src/schema/schema.generated.ts generated'",
     "build": "tsc"
   },
   "keywords": [],
@@ -18,6 +19,7 @@
     "fastify": "^4.23.2"
   },
   "devDependencies": {
+    "json-schema-to-typescript": "^13.1.1",
     "typescript": "^5.2.2"
   }
 }

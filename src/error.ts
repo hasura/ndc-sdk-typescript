@@ -1,4 +1,4 @@
-import { ErrorResponse } from "./generated";
+import { ErrorResponse } from "./schema";
 
 // ref: https://hasura.github.io/ndc-spec/specification/error-handling.html
 type ErrorCode =

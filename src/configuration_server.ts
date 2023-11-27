@@ -4,7 +4,7 @@ import JSONSchema, { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
 
-import { ErrorResponseSchema, SchemaResponse } from "./generated";
+import { ErrorResponseSchema, ValidateResponse, ValidateResponseSchema } from "./schema";
 
 export interface ConfigurationServerOptions {
   port: number;
@@ -30,12 +30,22 @@ export async function start_configuration_server<
     logger: true,
   });
 
+  // temporary: use JSON.stringify instead of https://github.com/fastify/fast-json-stringify
+  // todo: remove this once issue is addressed https://github.com/fastify/fastify/issues/5073
+  server.setSerializerCompiler(
+    ({ schema, method, url, httpStatus, contentType }) => {
+      return (data) => JSON.stringify(data);
+    }
+  );
+
+  const raw_configuration_schema = connector.get_raw_configuration_schema();
+
   server.get(
     "/",
     {
       schema: {
         response: {
-          200: connector.get_configuration_schema(),
+          200: raw_configuration_schema,
           ...errorResponses,
         },
       },
@@ -51,9 +61,9 @@ export async function start_configuration_server<
     "/",
     {
       schema: {
-        body: connector.get_configuration_schema(),
+        body: raw_configuration_schema,
         response: {
-          200: connector.get_configuration_schema(),
+          200: raw_configuration_schema,
           ...errorResponses,
         },
       },
@@ -80,31 +90,33 @@ export async function start_configuration_server<
         },
       },
     },
-    async (): Promise<JSONSchemaObject> => connector.get_configuration_schema()
+    async (): Promise<JSONSchemaObject> => raw_configuration_schema
   );
 
   server.post(
     "/validate",
     {
       schema: {
-        body: connector.get_configuration_schema(),
+        body: raw_configuration_schema,
         response: {
-          200: connector.get_configuration_schema(),
+          200: ValidateResponseSchema,
           ...errorResponses,
         },
       },
     },
     async (
       request: FastifyRequest<{ Body: RawConfiguration }>
-    ): Promise<{ schema: SchemaResponse; resolved_configuration: string }> => {
+    ): Promise<ValidateResponse> => {
       const resolvedConfiguration = await connector.validate_raw_configuration(
         // type assertion required because Configuration is a generic parameter
         request.body as RawConfiguration
       );
       const schema = await connector.get_schema(resolvedConfiguration);
+      const capabilities = connector.get_capabilities(resolvedConfiguration);
 
       return {
         schema,
+        capabilities,
         resolved_configuration: encodeJSON(resolvedConfiguration),
       };
     }
