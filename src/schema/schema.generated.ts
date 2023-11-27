@@ -614,9 +614,7 @@ export interface RowSet {
       }[]
     | null;
 }
-export interface RowFieldValue {
-  [k: string]: unknown;
-}
+export type RowFieldValue = unknown; // Manually corrected :(
 export interface MutationRequest {
   /**
    * The mutation operations to perform
