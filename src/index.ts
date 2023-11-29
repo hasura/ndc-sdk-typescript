@@ -48,6 +48,8 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
     )
     .addOption(new Option("--otlp_endpoint <endpoint>").env("OTLP_ENDPOINT"))
     .addOption(new Option("--service-name <name>").env("OTEL_SERVICE_NAME"))
+    .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
+    .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false))
     .action(async (options: ServerOptions) => {
       await start_server(connector, options);
     });
@@ -66,6 +68,8 @@ export function get_serve_configuration_command<
           .default(9100)
           .argParser(parseIntOption)
       )
+      .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
+      .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false))
       .action(async (options: ConfigurationServerOptions) => {
         await start_configuration_server(connector, options);
       })

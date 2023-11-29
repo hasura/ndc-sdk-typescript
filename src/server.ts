@@ -3,6 +3,7 @@ import Fastify, { FastifyRequest } from "fastify";
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
+import { configureFastifyLogging } from "./logging";
 
 import {
   CapabilitiesResponseSchema,
@@ -55,6 +56,8 @@ export interface ServerOptions {
   serviceTokenSecret: string | null;
   otlpEndpoint: string | null;
   serviceName: string | null;
+  logLevel: string;
+  prettyPrintLogs: string;
 }
 
 export async function start_server<RawConfiguration, Configuration, State>(
@@ -72,7 +75,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
   const state = await connector.try_init_state(configuration, metrics);
 
   const server = Fastify({
-    logger: true,
+    logger: configureFastifyLogging(options),
     ajv: {
       customOptions: customAjvOptions,
     },
@@ -140,7 +143,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
         Body: QueryRequest;
       }>
     ) => {
-      return connector.query(configuration, state, request.body);
+      request.log.debug({requestBody: request.body}, "Query Request");
+      const queryResponse = await connector.query(configuration, state, request.body);
+      request.log.debug({responseBody: queryResponse}, "Query Response");
+      return queryResponse;
     }
   );
 
@@ -155,12 +161,11 @@ export async function start_server<RawConfiguration, Configuration, State>(
         },
       },
     },
-    (request) => {
-      return connector.explain(
-        configuration,
-        state,
-        request.body as QueryRequest
-      );
+    async (request: FastifyRequest<{Body: QueryRequest}>) => {
+      request.log.debug({ requestBody: request.body}, "Explain Request");
+      const explainResponse = await connector.explain(configuration, state, request.body);
+      request.log.debug({ responseBody: explainResponse}, "Explain Response");
+      return explainResponse;
     }
   );
 
@@ -175,20 +180,21 @@ export async function start_server<RawConfiguration, Configuration, State>(
         },
       },
     },
-    (
+    async (
       request: FastifyRequest<{
         Body: MutationRequest;
       }>
     ): Promise<MutationResponse> => {
-      return connector.mutation(
-        configuration,
-        state,
-        request.body as MutationRequest
-      );
+      request.log.debug({ requestBody: request.body }, "Mutation Request");
+      const mutuationResponse = await connector.mutation(configuration, state, request.body);
+      request.log.debug({ responseBody: mutuationResponse }, "Mutation Response");
+      return mutuationResponse;
     }
   );
 
   server.setErrorHandler(function (error, _request, reply) {
+    this.log.error(error);
+
     if (error.validation) {
       reply.status(400).send({
         message:
@@ -196,8 +202,6 @@ export async function start_server<RawConfiguration, Configuration, State>(
         details: error.validation,
       });
     } else if (error instanceof ConnectorError) {
-      // Log error
-      this.log.error(error);
       // Send error response
       reply.status(error.statusCode).send({
         message: error.message,

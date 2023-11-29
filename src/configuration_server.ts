@@ -5,9 +5,12 @@ import { Connector } from "./connector";
 import { ConnectorError } from "./error";
 
 import { ErrorResponseSchema, ValidateResponse, ValidateResponseSchema } from "./schema";
+import { configureFastifyLogging } from "./logging";
 
 export interface ConfigurationServerOptions {
   port: number;
+  logLevel: string;
+  prettyPrintLogs: string;
 }
 
 const errorResponses = {
@@ -27,7 +30,7 @@ export async function start_configuration_server<
   options: ConfigurationServerOptions
 ) {
   const server = Fastify({
-    logger: true,
+    logger: configureFastifyLogging(options),
   });
 
   // temporary: use JSON.stringify instead of https://github.com/fastify/fast-json-stringify
