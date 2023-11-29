@@ -20,7 +20,8 @@ import {
   QueryRequest,
 } from "./schema";
 
-import { Options as AjvOptions } from "ajv";
+import Ajv, { Options as AjvOptions, ErrorObject as AjvErrorObject } from "ajv";
+import fastify from "fastify";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -57,15 +58,29 @@ export interface ServerOptions {
   serviceName: string | null;
 }
 
+class ConfigurationError extends Error {
+  validation_errors: AjvErrorObject[];
+
+  constructor(message: string, errors: AjvErrorObject[]) {
+    super(message);
+    this.validation_errors = errors;
+  }
+}
+
 export async function start_server<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
+  const ajv = new Ajv(customAjvOptions);
+  const validateRawConfigurationAgainstSchema = ajv.compile<RawConfiguration>(connector.get_raw_configuration_schema())
+
   const data = fs.readFileSync(options.configuration);
-  const rawConfiguration = JSON.parse(data.toString("utf8"));
-  const configuration = await connector.validate_raw_configuration(
-    rawConfiguration
-  );
+  const rawConfiguration: unknown = JSON.parse(data.toString("utf8"));
+  if (!validateRawConfigurationAgainstSchema(rawConfiguration)) {
+    throw new ConfigurationError("Invalid configuration provided", validateRawConfigurationAgainstSchema.errors ?? []);
+  }
+
+  const configuration = await connector.validate_raw_configuration(rawConfiguration);
 
   const metrics = {}; // todo
 
