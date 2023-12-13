@@ -54,9 +54,9 @@ const errorResponses = {
 export interface ServerOptions {
   configuration: string;
   port: number;
-  serviceTokenSecret: string | null;
-  otlpEndpoint: string | null;
-  serviceName: string | null;
+  serviceTokenSecret: string | undefined;
+  otlpEndpoint: string | undefined;
+  serviceName: string | undefined;
   logLevel: string;
   prettyPrintLogs: string;
 }
@@ -113,13 +113,11 @@ export async function start_server<RawConfiguration, Configuration, State>(
 
   server.addHook("preHandler", (request, reply, done) => {
     const expectedAuthHeader =
-      options.serviceTokenSecret === null
-        ? null
+      options.serviceTokenSecret === undefined
+        ? undefined
         : `Bearer ${options.serviceTokenSecret}`;
 
-    const authHeader = request.headers.authorization ?? null;
-
-    if (authHeader === expectedAuthHeader) {
+    if (request.headers.authorization === expectedAuthHeader) {
       return done();
     } else {
       reply.code(401).send({
