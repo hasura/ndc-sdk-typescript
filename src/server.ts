@@ -54,9 +54,9 @@ const errorResponses = {
 export interface ServerOptions {
   configuration: string;
   port: number;
-  serviceTokenSecret: string | null;
-  otlpEndpoint: string | null;
-  serviceName: string | null;
+  serviceTokenSecret: string | undefined;
+  otlpEndpoint: string | undefined;
+  serviceName: string | undefined;
   logLevel: string;
   prettyPrintLogs: string;
 }
@@ -75,15 +75,22 @@ export async function start_server<RawConfiguration, Configuration, State>(
   options: ServerOptions
 ) {
   const ajv = new Ajv(customAjvOptions);
-  const validateRawConfigurationAgainstSchema = ajv.compile<RawConfiguration>(connector.get_raw_configuration_schema())
+  const validateRawConfigurationAgainstSchema = ajv.compile<RawConfiguration>(
+    connector.get_raw_configuration_schema()
+  );
 
   const data = fs.readFileSync(options.configuration);
   const rawConfiguration: unknown = JSON.parse(data.toString("utf8"));
   if (!validateRawConfigurationAgainstSchema(rawConfiguration)) {
-    throw new ConfigurationError("Invalid configuration provided", validateRawConfigurationAgainstSchema.errors ?? []);
+    throw new ConfigurationError(
+      "Invalid configuration provided",
+      validateRawConfigurationAgainstSchema.errors ?? []
+    );
   }
 
-  const configuration = await connector.validate_raw_configuration(rawConfiguration);
+  const configuration = await connector.validate_raw_configuration(
+    rawConfiguration
+  );
 
   const metrics = {}; // todo
 
@@ -103,6 +110,26 @@ export async function start_server<RawConfiguration, Configuration, State>(
       return (data) => JSON.stringify(data);
     }
   );
+
+  server.addHook("preHandler", (request, reply, done) => {
+    const expectedAuthHeader =
+      options.serviceTokenSecret === undefined
+        ? undefined
+        : `Bearer ${options.serviceTokenSecret}`;
+
+    if (request.headers.authorization === expectedAuthHeader) {
+      return done();
+    } else {
+      reply.code(401).send({
+        message: "Internal Error",
+        details: {
+          cause: "Bearer token does not match.",
+        },
+      });
+
+      return reply;
+    }
+  });
 
   server.get(
     "/capabilities",
@@ -158,9 +185,13 @@ export async function start_server<RawConfiguration, Configuration, State>(
         Body: QueryRequest;
       }>
     ) => {
-      request.log.debug({requestBody: request.body}, "Query Request");
-      const queryResponse = await connector.query(configuration, state, request.body);
-      request.log.debug({responseBody: queryResponse}, "Query Response");
+      request.log.debug({ requestBody: request.body }, "Query Request");
+      const queryResponse = await connector.query(
+        configuration,
+        state,
+        request.body
+      );
+      request.log.debug({ responseBody: queryResponse }, "Query Response");
       return queryResponse;
     }
   );
@@ -176,10 +207,14 @@ export async function start_server<RawConfiguration, Configuration, State>(
         },
       },
     },
-    async (request: FastifyRequest<{Body: QueryRequest}>) => {
-      request.log.debug({ requestBody: request.body}, "Explain Request");
-      const explainResponse = await connector.explain(configuration, state, request.body);
-      request.log.debug({ responseBody: explainResponse}, "Explain Response");
+    async (request: FastifyRequest<{ Body: QueryRequest }>) => {
+      request.log.debug({ requestBody: request.body }, "Explain Request");
+      const explainResponse = await connector.explain(
+        configuration,
+        state,
+        request.body
+      );
+      request.log.debug({ responseBody: explainResponse }, "Explain Response");
       return explainResponse;
     }
   );
@@ -201,8 +236,15 @@ export async function start_server<RawConfiguration, Configuration, State>(
       }>
     ): Promise<MutationResponse> => {
       request.log.debug({ requestBody: request.body }, "Mutation Request");
-      const mutuationResponse = await connector.mutation(configuration, state, request.body);
-      request.log.debug({ responseBody: mutuationResponse }, "Mutation Response");
+      const mutuationResponse = await connector.mutation(
+        configuration,
+        state,
+        request.body
+      );
+      request.log.debug(
+        { responseBody: mutuationResponse },
+        "Mutation Response"
+      );
       return mutuationResponse;
     }
   );
