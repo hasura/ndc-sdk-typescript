@@ -8,7 +8,7 @@ import {
 
 export * from "./error";
 export * from "./schema";
-export { Connector, start_configuration_server, start_server };
+export { Connector, ServerOptions, ConfigurationServerOptions, start_configuration_server, start_server };
 
 /**
  * Starts the connector.
@@ -29,9 +29,9 @@ export function start<RawConfiguration, Configuration, State>(
 }
 
 export function get_serve_command<RawConfiguration, Configuration, State>(
-  connector: Connector<RawConfiguration, Configuration, State>
+  connector?: Connector<RawConfiguration, Configuration, State>
 ) {
-  return new Command("serve")
+  const command = new Command("serve")
     .addOption(
       new Option("--configuration <path>")
         .env("CONFIGURATION_FILE")
@@ -49,31 +49,38 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
     .addOption(new Option("--otlp_endpoint <endpoint>").env("OTLP_ENDPOINT"))
     .addOption(new Option("--service-name <name>").env("OTEL_SERVICE_NAME"))
     .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
-    .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false))
-    .action(async (options: ServerOptions) => {
+    .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false));
+
+  if (connector) {
+    command.action(async (options: ServerOptions) => {
       await start_server(connector, options);
-    });
+    })
+  }
+  return command;
 }
 
 export function get_serve_configuration_command<
   RawConfiguration,
   Configuration,
   State
->(connector: Connector<RawConfiguration, Configuration, State>) {
-  return new Command("configuration").addCommand(
-    new Command("serve")
-      .addOption(
-        new Option("--port <port>")
-          .env("PORT")
-          .default(9100)
-          .argParser(parseIntOption)
-      )
-      .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
-      .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false))
-      .action(async (options: ConfigurationServerOptions) => {
-        await start_configuration_server(connector, options);
-      })
-  );
+>(connector?: Connector<RawConfiguration, Configuration, State>) {
+  const serveCommand = new Command("serve")
+    .addOption(
+      new Option("--port <port>")
+        .env("PORT")
+        .default(9100)
+        .argParser(parseIntOption)
+    )
+    .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
+    .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false));
+
+  if (connector) {
+    serveCommand.action(async (options: ConfigurationServerOptions) => {
+      await start_configuration_server(connector, options);
+    });
+  }
+
+  return new Command("configuration").addCommand(serveCommand);
 }
 
 function parseIntOption(value: string, _previous: number): number {
