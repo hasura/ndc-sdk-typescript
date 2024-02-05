@@ -48,10 +48,10 @@
       "type": "object",
       "required": [
         "capabilities",
-        "versions"
+        "version"
       ],
       "properties": {
-        "versions": {
+        "version": {
           "type": "string"
         },
         "capabilities": {
@@ -64,21 +64,15 @@
       "description": "Describes the features of the specification which a data connector implements.",
       "type": "object",
       "required": [
+        "mutation",
         "query"
       ],
       "properties": {
         "query": {
           "$ref": "#/definitions/QueryCapabilities"
         },
-        "explain": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/LeafCapability"
-            },
-            {
-              "type": "null"
-            }
-          ]
+        "mutation": {
+          "$ref": "#/definitions/MutationCapabilities"
         },
         "relationships": {
           "anyOf": [
@@ -117,12 +111,51 @@
               "type": "null"
             }
           ]
+        },
+        "explain": {
+          "description": "Does the connector support explaining queries",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
     "LeafCapability": {
       "description": "A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.",
       "type": "object"
+    },
+    "MutationCapabilities": {
+      "title": "Mutation Capabilities",
+      "type": "object",
+      "properties": {
+        "transactional": {
+          "description": "Does the connector support executing multiple mutations in a transaction.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explain": {
+          "description": "Does the connector support explaining mutations",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     },
     "RelationshipCapabilities": {
       "title": "Relationship Capabilities",
@@ -314,26 +347,85 @@
               ]
             }
           }
+        },
+        {
+          "description": "A predicate type for a given object type",
+          "type": "object",
+          "required": [
+            "object_type_name",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "predicate"
+              ]
+            },
+            "object_type_name": {
+              "description": "The object type name",
+              "type": "string"
+            }
+          }
         }
       ]
     },
     "ComparisonOperatorDefinition": {
       "title": "Comparison Operator Definition",
       "description": "The definition of a comparison operator on a scalar type",
-      "type": "object",
-      "required": [
-        "argument_type"
-      ],
-      "properties": {
-        "argument_type": {
-          "description": "The type of the argument to this operator",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Type"
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "equal"
+              ]
             }
-          ]
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "in"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "argument_type",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "custom"
+              ]
+            },
+            "argument_type": {
+              "description": "The type of the argument to this operator",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Type"
+                }
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     "ObjectType": {
       "title": "Object Type",
@@ -670,7 +762,7 @@
             }
           ]
         },
-        "where": {
+        "predicate": {
           "anyOf": [
             {
               "$ref": "#/definitions/Expression"
@@ -767,6 +859,17 @@
             },
             "column": {
               "type": "string"
+            },
+            "fields": {
+              "description": "When the type of the column is a (possibly-nullable) array or object, the caller can request a subset of the complete column data, by specifying fields to fetch here. If omitted, the column data will be fetched in full.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NestedField"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         },
@@ -798,6 +901,52 @@
               "additionalProperties": {
                 "$ref": "#/definitions/RelationshipArgument"
               }
+            }
+          }
+        }
+      ]
+    },
+    "NestedField": {
+      "title": "NestedField",
+      "oneOf": [
+        {
+          "title": "NestedObject",
+          "type": "object",
+          "required": [
+            "fields",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "object"
+              ]
+            },
+            "fields": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/Field"
+              }
+            }
+          }
+        },
+        {
+          "title": "NestedArray",
+          "type": "object",
+          "required": [
+            "fields",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "array"
+              ]
+            },
+            "fields": {
+              "$ref": "#/definitions/NestedField"
             }
           }
         }
@@ -993,7 +1142,6 @@
       "type": "object",
       "required": [
         "arguments",
-        "predicate",
         "relationship"
       ],
       "properties": {
@@ -1010,9 +1158,12 @@
         },
         "predicate": {
           "description": "A predicate expression to apply to the target collection",
-          "allOf": [
+          "anyOf": [
             {
               "$ref": "#/definitions/Expression"
+            },
+            {
+              "type": "null"
             }
           ]
         }
@@ -1122,7 +1273,7 @@
               "$ref": "#/definitions/ComparisonTarget"
             },
             "operator": {
-              "$ref": "#/definitions/BinaryComparisonOperator"
+              "type": "string"
             },
             "value": {
               "$ref": "#/definitions/ComparisonValue"
@@ -1132,38 +1283,8 @@
         {
           "type": "object",
           "required": [
-            "column",
-            "operator",
-            "type",
-            "values"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "binary_array_comparison_operator"
-              ]
-            },
-            "column": {
-              "$ref": "#/definitions/ComparisonTarget"
-            },
-            "operator": {
-              "$ref": "#/definitions/BinaryArrayComparisonOperator"
-            },
-            "values": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ComparisonValue"
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
             "in_collection",
-            "type",
-            "where"
+            "type"
           ],
           "properties": {
             "type": {
@@ -1175,8 +1296,15 @@
             "in_collection": {
               "$ref": "#/definitions/ExistsInCollection"
             },
-            "where": {
-              "$ref": "#/definitions/Expression"
+            "predicate": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }
@@ -1240,43 +1368,6 @@
         "is_null"
       ]
     },
-    "BinaryComparisonOperator": {
-      "title": "Binary Comparison Operator",
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "type"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "equal"
-              ]
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "name",
-            "type"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "other"
-              ]
-            },
-            "name": {
-              "type": "string"
-            }
-          }
-        }
-      ]
-    },
     "ComparisonValue": {
       "title": "Comparison Value",
       "oneOf": [
@@ -1332,13 +1423,6 @@
             }
           }
         }
-      ]
-    },
-    "BinaryArrayComparisonOperator": {
-      "title": "Binary Array Comparison Operator",
-      "type": "string",
-      "enum": [
-        "in"
       ]
     },
     "ExistsInCollection": {

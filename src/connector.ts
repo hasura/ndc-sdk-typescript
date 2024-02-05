@@ -14,7 +14,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
   /**
    * Return jsonschema for the raw configuration for this connector
    */
-  get_raw_configuration_schema(): JSONSchemaObject;
+  getRawConfigurationSchema(): JSONSchemaObject;
 
   /**
    * Return an empty raw configuration, to be manually filled in by the user to allow connection to the data source.
@@ -28,14 +28,14 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * }
    * ```
    */
-  make_empty_configuration(): RawConfiguration;
+  makeEmptyConfiguration(): RawConfiguration;
   /**
    * Take a raw configuration, update it where appropriate by connecting to the underlying data source, and otherwise return it as-is
    * For example, if our configuration includes a list of tables, we may want to fetch an updated list from the data source.
    * This is also used to "hidrate" an "empty" configuration where a user has provided connection details and little else.
    * @param rawConfiguration a base raw configuration
    */
-  update_configuration(
+  updateConfiguration(
     rawConfiguration: RawConfiguration
   ): Promise<RawConfiguration>;
   /**
@@ -43,7 +43,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * returning a configuration error or a validated [`Connector::Configuration`].
    * @param configuration
    */
-  validate_raw_configuration(
+  validateRawConfiguration(
     rawConfiguration: RawConfiguration
   ): Promise<Configuration>;
 
@@ -58,7 +58,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * @param configuration
    * @param metrics
    */
-  try_init_state(
+  tryInitState(
     configuration: Configuration,
     metrics: unknown
   ): Promise<State>;
@@ -74,7 +74,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * @param configuration
    * @param state
    */
-  fetch_metrics(configuration: Configuration, state: State): Promise<undefined>;
+  fetchMetrics(configuration: Configuration, state: State): Promise<undefined>;
   /**
    * Check the health of the connector.
    *
@@ -85,7 +85,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * @param configuration
    * @param state
    */
-  health_check(configuration: Configuration, state: State): Promise<undefined>;
+  healthCheck(configuration: Configuration, state: State): Promise<undefined>;
 
   /**
    * Get the connector's capabilities.
@@ -96,7 +96,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * This function should be syncronous
    * @param configuration
    */
-  get_capabilities(configuration: Configuration): CapabilitiesResponse;
+  getCapabilities(configuration: Configuration): CapabilitiesResponse;
 
   /**
    * Get the connector's schema.
@@ -105,7 +105,7 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * from the NDC specification.
    * @param configuration
    */
-  get_schema(configuration: Configuration): Promise<SchemaResponse>;
+  getSchema(configuration: Configuration): Promise<SchemaResponse>;
 
   /**
    * Explain a query by creating an execution plan
@@ -116,10 +116,25 @@ export interface Connector<RawConfiguration, Configuration, State> {
    * @param state
    * @param request
    */
-  explain(
+  queryExplain(
     configuration: Configuration,
     state: State,
     request: QueryRequest
+  ): Promise<ExplainResponse>;
+
+  /**
+   * Explain a mutation by creating an execution plan
+   *
+   * This function implements the [explain endpoint](https://hasura.github.io/ndc-spec/specification/explain.html)
+   * from the NDC specification.
+   * @param configuration
+   * @param state
+   * @param request
+   */
+  mutationExplain(
+    configuration: Configuration,
+    state: State,
+    request: MutationRequest
   ): Promise<ExplainResponse>;
 
   /**

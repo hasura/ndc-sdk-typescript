@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.0.0
+Breaking change: support for the [v0.1.0-rc.14 of NDC Spec](https://github.com/hasura/ndc-spec/compare/v0.1.0-rc.13...v0.1.0-rc.14).
+
+- Function name formatting is now standard JavaScript `camelCase`. NDC types used for wire-transmission match the spec (snake_cased).
+- Added [nested field selections](https://github.com/hasura/ndc-spec/pull/70) (`Field.fields`)
+- Capabilities now only specifies [a single supported version](https://github.com/hasura/ndc-spec/pull/82) (`CapabilitiesResponse.version`)
+- `Expression.where` [renamed](https://github.com/hasura/ndc-spec/pull/87) to `Expression.predicate`
+- `PathElement.predicate` is now [optional](https://github.com/hasura/ndc-spec/pull/87)
+- Added [Predicate types](https://github.com/hasura/ndc-spec/blob/main/rfcs/0002-boolean-expression-types.md) (new `predicate` Type.type)
+- Added [mutation capability](https://github.com/hasura/ndc-spec/pull/80)
+- Comparison operators
+- [Changes to explain](https://github.com/hasura/ndc-spec/pull/85):
+  - `Connector.explain` renamed to `Connector.queryExplain` and endpoint moved from `/explain` to `/query/explain`.
+  - `Connector.mutationExplain` added with endpoint `/mutation/explain`.
+  - `explain` capability moved to `query.explain`. `mutation.explain` capability added.
+- `ComparisonOperatorDefinition` now has `equal` and `in` as [two standard definitions](https://github.com/hasura/ndc-spec/pull/79/files) and custom operators can be defined. The equality operator is no longer required to be defined and must be explicitly defined.
+
 ## 1.2.8
 - Add new `ConnectorError` types:
   - `UnprocessableContent`: The request could not be handled because, while the request was well-formed, it was not semantically correct. For example, a value for a custom scalar type was provided, but with an incorrect type

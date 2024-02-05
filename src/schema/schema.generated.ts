@@ -29,6 +29,30 @@ export type Type =
        * The type of the elements of the array
        */
       element_type: Type;
+    }
+  | {
+      type: "predicate";
+      /**
+       * The object type name
+       */
+      object_type_name: string;
+    };
+/**
+ * The definition of a comparison operator on a scalar type
+ */
+export type ComparisonOperatorDefinition =
+  | {
+      type: "equal";
+    }
+  | {
+      type: "in";
+    }
+  | {
+      type: "custom";
+      /**
+       * The type of the argument to this operator
+       */
+      argument_type: Type;
     };
 export type Aggregate =
   | {
@@ -60,6 +84,10 @@ export type Field =
   | {
       type: "column";
       column: string;
+      /**
+       * When the type of the column is a (possibly-nullable) array or object, the caller can request a subset of the complete column data, by specifying fields to fetch here. If omitted, the column data will be fetched in full.
+       */
+      fields?: NestedField | null;
     }
   | {
       type: "relationship";
@@ -75,6 +103,7 @@ export type Field =
         [k: string]: RelationshipArgument;
       };
     };
+export type NestedField = NestedObject | NestedArray;
 export type RelationshipArgument =
   | {
       type: "variable";
@@ -144,19 +173,13 @@ export type Expression =
   | {
       type: "binary_comparison_operator";
       column: ComparisonTarget;
-      operator: BinaryComparisonOperator;
+      operator: string;
       value: ComparisonValue;
-    }
-  | {
-      type: "binary_array_comparison_operator";
-      column: ComparisonTarget;
-      operator: BinaryArrayComparisonOperator;
-      values: ComparisonValue[];
     }
   | {
       type: "exists";
       in_collection: ExistsInCollection;
-      where: Expression;
+      predicate?: Expression | null;
     };
 export type ComparisonTarget =
   | {
@@ -178,14 +201,6 @@ export type ComparisonTarget =
       name: string;
     };
 export type UnaryComparisonOperator = "is_null";
-export type BinaryComparisonOperator =
-  | {
-      type: "equal";
-    }
-  | {
-      type: "other";
-      name: string;
-    };
 export type ComparisonValue =
   | {
       type: "column";
@@ -199,7 +214,6 @@ export type ComparisonValue =
       type: "variable";
       name: string;
     };
-export type BinaryArrayComparisonOperator = "in";
 export type ExistsInCollection =
   | {
       type: "related";
@@ -270,7 +284,7 @@ export interface SchemaRoot {
   validate_response: ValidateResponse;
 }
 export interface CapabilitiesResponse {
-  versions: string;
+  version: string;
   capabilities: Capabilities;
 }
 /**
@@ -278,7 +292,7 @@ export interface CapabilitiesResponse {
  */
 export interface Capabilities {
   query: QueryCapabilities;
-  explain?: LeafCapability | null;
+  mutation: MutationCapabilities;
   relationships?: RelationshipCapabilities | null;
 }
 export interface QueryCapabilities {
@@ -290,11 +304,25 @@ export interface QueryCapabilities {
    * Does the connector support queries which use variables
    */
   variables?: LeafCapability | null;
+  /**
+   * Does the connector support explaining queries
+   */
+  explain?: LeafCapability | null;
 }
 /**
  * A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.
  */
 export interface LeafCapability {}
+export interface MutationCapabilities {
+  /**
+   * Does the connector support executing multiple mutations in a transaction.
+   */
+  transactional?: LeafCapability | null;
+  /**
+   * Does the connector support explaining mutations
+   */
+  explain?: LeafCapability | null;
+}
 export interface RelationshipCapabilities {
   /**
    * Does the connector support comparisons that involve related collections (ie. joins)?
@@ -356,15 +384,6 @@ export interface AggregateFunctionDefinition {
    * The scalar or object type of the result of this function
    */
   result_type: Type;
-}
-/**
- * The definition of a comparison operator on a scalar type
- */
-export interface ComparisonOperatorDefinition {
-  /**
-   * The type of the argument to this operator
-   */
-  argument_type: Type;
 }
 /**
  * The definition of an object type
@@ -551,7 +570,17 @@ export interface Query {
    */
   offset?: number | null;
   order_by?: OrderBy | null;
-  where?: Expression | null;
+  predicate?: Expression | null;
+}
+export interface NestedObject {
+  type: "object";
+  fields: {
+    [k: string]: Field;
+  };
+}
+export interface NestedArray {
+  type: "array";
+  fields: NestedField;
 }
 export interface OrderBy {
   /**
@@ -577,7 +606,7 @@ export interface PathElement {
   /**
    * A predicate expression to apply to the target collection
    */
-  predicate: Expression;
+  predicate?: Expression | null;
 }
 export interface Relationship {
   /**
