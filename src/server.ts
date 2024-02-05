@@ -209,13 +209,13 @@ export async function startServer<RawConfiguration, Configuration, State>(
       },
     },
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
-      request.log.debug({ requestBody: request.body }, "Explain Request");
+      request.log.debug({ requestBody: request.body }, "Query Explain Request");
       const explainResponse = await connector.queryExplain(
         configuration,
         state,
         request.body
       );
-      request.log.debug({ responseBody: explainResponse }, "Explain Response");
+      request.log.debug({ responseBody: explainResponse }, "Query Explain Response");
       return explainResponse;
     }
   );
