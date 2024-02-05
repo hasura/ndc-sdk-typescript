@@ -1,14 +1,14 @@
 import { Connector } from "./connector";
 import { Command, Option, InvalidOptionArgumentError } from "commander";
-import { ServerOptions, start_server } from "./server";
+import { ServerOptions, startServer } from "./server";
 import {
   ConfigurationServerOptions,
-  start_configuration_server,
-} from "./configuration_server";
+  startConfigurationServer,
+} from "./configuration-server";
 
 export * from "./error";
 export * from "./schema";
-export { Connector, ServerOptions, ConfigurationServerOptions, start_configuration_server, start_server };
+export { Connector, ServerOptions, ConfigurationServerOptions, startConfigurationServer, startServer };
 
 /**
  * Starts the connector.
@@ -22,13 +22,13 @@ export function start<RawConfiguration, Configuration, State>(
 ) {
   const program = new Command();
 
-  program.addCommand(get_serve_command(connector));
-  program.addCommand(get_serve_configuration_command(connector));
+  program.addCommand(getServeCommand(connector));
+  program.addCommand(getServeConfigurationCommand(connector));
 
   program.parseAsync(process.argv).catch(console.error);
 }
 
-export function get_serve_command<RawConfiguration, Configuration, State>(
+export function getServeCommand<RawConfiguration, Configuration, State>(
   connector?: Connector<RawConfiguration, Configuration, State>
 ) {
   const command = new Command("serve")
@@ -53,13 +53,13 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
-      await start_server(connector, options);
+      await startServer(connector, options);
     })
   }
   return command;
 }
 
-export function get_serve_configuration_command<
+export function getServeConfigurationCommand<
   RawConfiguration,
   Configuration,
   State
@@ -76,7 +76,7 @@ export function get_serve_configuration_command<
 
   if (connector) {
     serveCommand.action(async (options: ConfigurationServerOptions) => {
-      await start_configuration_server(connector, options);
+      await startConfigurationServer(connector, options);
     });
   }
 

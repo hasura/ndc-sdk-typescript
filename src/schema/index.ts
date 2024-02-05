@@ -1,7 +1,7 @@
 import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 import schema from "./schema.generated.json";
 
-function schema_for_type(type_name: string): JSONSchemaObject {
+function schemaForType(type_name: string): JSONSchemaObject {
   return {
     $schema: schema.$schema,
     $ref: `#/definitions/${type_name}`,
@@ -9,15 +9,15 @@ function schema_for_type(type_name: string): JSONSchemaObject {
   }
 }
 
-const CapabilitiesResponseSchema = schema_for_type("CapabilitiesResponse");
-const SchemaResponseSchema = schema_for_type("SchemaResponse");
-const QueryRequestSchema = schema_for_type("QueryRequest");
-const QueryResponseSchema = schema_for_type("QueryResponse");
-const ExplainResponseSchema = schema_for_type("ExplainResponse");
-const MutationRequestSchema = schema_for_type("MutationRequest");
-const MutationResponseSchema = schema_for_type("MutationResponse");
-const ErrorResponseSchema = schema_for_type("ErrorResponse");
-const ValidateResponseSchema = schema_for_type("ValidateResponse");
+const CapabilitiesResponseSchema = schemaForType("CapabilitiesResponse");
+const SchemaResponseSchema = schemaForType("SchemaResponse");
+const QueryRequestSchema = schemaForType("QueryRequest");
+const QueryResponseSchema = schemaForType("QueryResponse");
+const ExplainResponseSchema = schemaForType("ExplainResponse");
+const MutationRequestSchema = schemaForType("MutationRequest");
+const MutationResponseSchema = schemaForType("MutationResponse");
+const ErrorResponseSchema = schemaForType("ErrorResponse");
+const ValidateResponseSchema = schemaForType("ValidateResponse");
 
 export * from "./schema.generated";
 export {

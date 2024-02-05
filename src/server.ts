@@ -22,7 +22,6 @@ import {
 } from "./schema";
 
 import Ajv, { Options as AjvOptions, ErrorObject as AjvErrorObject } from "ajv";
-import fastify from "fastify";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -47,8 +46,10 @@ const errorResponses = {
   400: ErrorResponseSchema,
   403: ErrorResponseSchema,
   409: ErrorResponseSchema,
+  422: ErrorResponseSchema,
   500: ErrorResponseSchema,
   501: ErrorResponseSchema,
+  502: ErrorResponseSchema,
 };
 
 export interface ServerOptions {
@@ -62,21 +63,21 @@ export interface ServerOptions {
 }
 
 class ConfigurationError extends Error {
-  validation_errors: AjvErrorObject[];
+  validationErrors: AjvErrorObject[];
 
   constructor(message: string, errors: AjvErrorObject[]) {
     super(message);
-    this.validation_errors = errors;
+    this.validationErrors = errors;
   }
 }
 
-export async function start_server<RawConfiguration, Configuration, State>(
+export async function startServer<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
   options: ServerOptions
 ) {
   const ajv = new Ajv(customAjvOptions);
   const validateRawConfigurationAgainstSchema = ajv.compile<RawConfiguration>(
-    connector.get_raw_configuration_schema()
+    connector.getRawConfigurationSchema()
   );
 
   const data = fs.readFileSync(options.configuration);
@@ -88,13 +89,13 @@ export async function start_server<RawConfiguration, Configuration, State>(
     );
   }
 
-  const configuration = await connector.validate_raw_configuration(
+  const configuration = await connector.validateRawConfiguration(
     rawConfiguration
   );
 
   const metrics = {}; // todo
 
-  const state = await connector.try_init_state(configuration, metrics);
+  const state = await connector.tryInitState(configuration, metrics);
 
   const server = Fastify({
     logger: configureFastifyLogging(options),
@@ -142,16 +143,16 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return connector.get_capabilities(configuration);
+      return connector.getCapabilities(configuration);
     }
   );
 
   server.get("/health", (_request): Promise<undefined> => {
-    return connector.health_check(configuration, state);
+    return connector.healthCheck(configuration, state);
   });
 
   server.get("/metrics", (_request) => {
-    return connector.fetch_metrics(configuration, state);
+    return connector.fetchMetrics(configuration, state);
   });
 
   server.get(
@@ -165,7 +166,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return connector.get_schema(configuration);
+      return connector.getSchema(configuration);
     }
   );
 
@@ -197,7 +198,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
   );
 
   server.post(
-    "/explain",
+    "/query/explain",
     {
       schema: {
         body: QueryRequestSchema,
@@ -209,7 +210,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
     },
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
       request.log.debug({ requestBody: request.body }, "Explain Request");
-      const explainResponse = await connector.explain(
+      const explainResponse = await connector.queryExplain(
         configuration,
         state,
         request.body
@@ -246,6 +247,29 @@ export async function start_server<RawConfiguration, Configuration, State>(
         "Mutation Response"
       );
       return mutuationResponse;
+    }
+  );
+
+  server.post(
+    "/mutation/explain",
+    {
+      schema: {
+        body: MutationRequestSchema,
+        response: {
+          200: ExplainResponseSchema,
+          ...errorResponses,
+        },
+      },
+    },
+    async (request: FastifyRequest<{ Body: MutationRequest }>) => {
+      request.log.debug({ requestBody: request.body }, "Mutation Explain Request");
+      const explainResponse = await connector.mutationExplain(
+        configuration,
+        state,
+        request.body
+      );
+      request.log.debug({ responseBody: explainResponse }, "Mutation Explain Response");
+      return explainResponse;
     }
   );
 

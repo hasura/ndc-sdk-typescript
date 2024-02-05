@@ -17,11 +17,13 @@ const errorResponses = {
   400: ErrorResponseSchema,
   403: ErrorResponseSchema,
   409: ErrorResponseSchema,
+  422: ErrorResponseSchema,
   500: ErrorResponseSchema,
   501: ErrorResponseSchema,
+  502: ErrorResponseSchema,
 };
 
-export async function start_configuration_server<
+export async function startConfigurationServer<
   RawConfiguration,
   Configuration,
   State
@@ -41,14 +43,14 @@ export async function start_configuration_server<
     }
   );
 
-  const raw_configuration_schema = connector.get_raw_configuration_schema();
+  const rawConfigurationSchema = connector.getRawConfigurationSchema();
 
   server.get(
     "/",
     {
       schema: {
         response: {
-          200: raw_configuration_schema,
+          200: rawConfigurationSchema,
           ...errorResponses,
         },
       },
@@ -56,7 +58,7 @@ export async function start_configuration_server<
     async function get_schema(
       _request: FastifyRequest
     ): Promise<RawConfiguration> {
-      return connector.make_empty_configuration();
+      return connector.makeEmptyConfiguration();
     }
   );
 
@@ -64,9 +66,9 @@ export async function start_configuration_server<
     "/",
     {
       schema: {
-        body: raw_configuration_schema,
+        body: rawConfigurationSchema,
         response: {
-          200: raw_configuration_schema,
+          200: rawConfigurationSchema,
           ...errorResponses,
         },
       },
@@ -76,7 +78,7 @@ export async function start_configuration_server<
         Body: RawConfiguration;
       }>
     ): Promise<RawConfiguration> => {
-      return connector.update_configuration(
+      return connector.updateConfiguration(
         // type assertion required because Configuration is a generic parameter
         request.body as RawConfiguration
       );
@@ -93,14 +95,14 @@ export async function start_configuration_server<
         },
       },
     },
-    async (): Promise<JSONSchemaObject> => raw_configuration_schema
+    async (): Promise<JSONSchemaObject> => rawConfigurationSchema
   );
 
   server.post(
     "/validate",
     {
       schema: {
-        body: raw_configuration_schema,
+        body: rawConfigurationSchema,
         response: {
           200: ValidateResponseSchema,
           ...errorResponses,
@@ -110,12 +112,12 @@ export async function start_configuration_server<
     async (
       request: FastifyRequest<{ Body: RawConfiguration }>
     ): Promise<ValidateResponse> => {
-      const resolvedConfiguration = await connector.validate_raw_configuration(
+      const resolvedConfiguration = await connector.validateRawConfiguration(
         // type assertion required because Configuration is a generic parameter
         request.body as RawConfiguration
       );
-      const schema = await connector.get_schema(resolvedConfiguration);
-      const capabilities = connector.get_capabilities(resolvedConfiguration);
+      const schema = await connector.getSchema(resolvedConfiguration);
+      const capabilities = connector.getCapabilities(resolvedConfiguration);
 
       return {
         schema,
