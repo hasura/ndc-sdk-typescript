@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0
+Breaking change: support for the [v0.1.0-rc.15 of NDC Spec](https://github.com/hasura/ndc-spec/compare/v0.1.0-rc.14...v0.1.0-rc.15).
+
+- The [mutation request/response format has changed](https://github.com/hasura/ndc-spec/pull/90).
+  - `MutationOperation` fields are now defined as a `NestedField`
+  - `MutationOperationResponse` now returns a single value rather than a rowset
+
 ## 2.0.0
 Breaking change: support for the [v0.1.0-rc.14 of NDC Spec](https://github.com/hasura/ndc-spec/compare/v0.1.0-rc.13...v0.1.0-rc.14).
 
