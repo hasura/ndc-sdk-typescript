@@ -1,6 +1,6 @@
 {
   "name": "@hasura/ndc-sdk-typescript",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,12 +14,12 @@
   "license": "ISC",
   "dependencies": {
     "@json-schema-tools/meta-schema": "^1.7.0",
-    "@types/node": "^20.6.0",
     "commander": "^11.0.0",
     "fastify": "^4.23.2",
     "pino-pretty": "^10.2.3"
   },
   "devDependencies": {
+    "@types/node": "^20.6.0",
     "json-schema-to-typescript": "^13.1.1",
     "typescript": "^5.2.2"
   }

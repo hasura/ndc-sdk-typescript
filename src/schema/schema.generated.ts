@@ -265,11 +265,13 @@ export type MutationOperation = {
     [k: string]: unknown;
   };
   /**
-   * The fields to return
+   * The fields to return from the result, or null to return everything
    */
-  fields?: {
-    [k: string]: Field;
-  } | null;
+  fields?: NestedField | null;
+};
+export type MutationOperationResults = {
+  type: "procedure";
+  result: unknown;
 };
 
 export interface SchemaRoot {
@@ -661,20 +663,6 @@ export interface MutationResponse {
    * The results of each mutation operation, in the same order as they were received
    */
   operation_results: MutationOperationResults[];
-}
-export interface MutationOperationResults {
-  /**
-   * The number of rows affected by the mutation operation
-   */
-  affected_rows: number;
-  /**
-   * The rows affected by the mutation operation
-   */
-  returning?:
-    | {
-        [k: string]: RowFieldValue;
-      }[]
-    | null;
 }
 export interface ExplainResponse {
   /**
