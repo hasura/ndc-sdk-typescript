@@ -71,27 +71,11 @@ class ConfigurationError extends Error {
   }
 }
 
-export async function startServer<RawConfiguration, Configuration, State>(
-  connector: Connector<RawConfiguration, Configuration, State>,
+export async function startServer<Configuration, State>(
+  connector: Connector<Configuration, State>,
   options: ServerOptions
 ) {
-  const ajv = new Ajv(customAjvOptions);
-  const validateRawConfigurationAgainstSchema = ajv.compile<RawConfiguration>(
-    connector.getRawConfigurationSchema()
-  );
-
-  const data = fs.readFileSync(options.configuration);
-  const rawConfiguration: unknown = JSON.parse(data.toString("utf8"));
-  if (!validateRawConfigurationAgainstSchema(rawConfiguration)) {
-    throw new ConfigurationError(
-      "Invalid configuration provided",
-      validateRawConfigurationAgainstSchema.errors ?? []
-    );
-  }
-
-  const configuration = await connector.validateRawConfiguration(
-    rawConfiguration
-  );
+  const configuration = await connector.parseConfiguration(options.configuration);
 
   const metrics = {}; // todo
 

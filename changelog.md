@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.0.0
+Breaking change: support for the [Connector Deployment Spec](https://github.com/hasura/ndc-hub/blob/main/rfcs/0000-deployment.md).
+
+- The connector configuration server has been removed
+- The way configuration is handled on `Connector` interface has changed
+  - `getRawConfigurationSchema`, `makeEmptyConfiguration`, `updateConfiguration` have been removed.
+  - `parseConfiguation` replaces `validateRawConfiguration`, and is given the directory path in which the connector's configuration files can be found
+  - The `RawConfiguration` type parameter has been removed
+- The default port has changed from 8100 to 8080
+- The command line arguments passed to the `serve` command have changed:
+  - The `--configuration` argument now takes the connector's configuration directory. Its associated environment variable is now `HASURA_CONFIGURATION_DIRECTORY`
+  - The `--otlp_endpoint` argument has been renamed to `--otlp-endpoint` and its environment variable is now `OTEL_EXPORTER_OTLP_ENDPOINT`
+  - The `PORT` environment variable has changed to `HASURA_CONNECTOR_PORT`
+  - The `SERVICE_TOKEN_SECRET` environment variable has changed to `HASURA_SERVICE_TOKEN_SECRET`
+  - The `LOG_LEVEL` environment variable has changed to `HASURA_LOG_LEVEL`
+  - The `PRETTY_PRINT_LOGS` environment variable has changed to `HASURA_PRETTY_PRINT_LOGS`
+
 ## 3.0.0
 Breaking change: support for the [v0.1.0-rc.15 of NDC Spec](https://github.com/hasura/ndc-spec/compare/v0.1.0-rc.14...v0.1.0-rc.15).
 
