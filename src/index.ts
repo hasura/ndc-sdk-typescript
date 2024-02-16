@@ -25,15 +25,12 @@ export function start<Configuration, State>(
 export function getServeCommand<Configuration, State>(
   connector?: Connector<Configuration, State>
 ) {
-  const configurationOptions = new Option("--configuration <directory>")
-    .env("HASURA_CONFIGURATION_DIRECTORY")
-    .makeOptionMandatory(true)
-  if (process.platform !== "win32") {
-    configurationOptions.default("/etc/connector");
-  }
-
   const command = new Command("serve")
-    .addOption(configurationOptions)
+    .addOption(
+      new Option("--configuration <directory>")
+        .env("HASURA_CONFIGURATION_DIRECTORY")
+        .makeOptionMandatory(true)
+    )
     .addOption(
       new Option("--port <port>")
         .env("HASURA_CONNECTOR_PORT")
