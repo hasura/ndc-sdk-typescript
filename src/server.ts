@@ -1,5 +1,6 @@
 import fs from "fs";
 import Fastify, { FastifyRequest } from "fastify";
+import opentelemetry from '@opentelemetry/api';
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -56,8 +57,8 @@ export interface ServerOptions {
   configuration: string;
   port: number;
   serviceTokenSecret: string | undefined;
-  otlpEndpoint: string | undefined;
-  serviceName: string | undefined;
+  otelExporterOtlpEndpoint: string;
+  otelServiceName: string;
   logLevel: string;
   prettyPrintLogs: string;
 }
@@ -70,6 +71,8 @@ class ConfigurationError extends Error {
     this.validationErrors = errors;
   }
 }
+
+const tracer = opentelemetry.trace.getTracer("ndc");
 
 export async function startServer<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
@@ -143,7 +146,15 @@ export async function startServer<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return connector.getCapabilities(configuration);
+      const capabilitiesResponse = tracer.startActiveSpan(
+        "getCapabilities",
+        (span) => {
+          const capabilitiesResponse = connector.getCapabilities(configuration);
+          span.end();
+          return capabilitiesResponse;
+        }
+      );
+      return capabilitiesResponse;
     }
   );
 
@@ -166,7 +177,18 @@ export async function startServer<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return connector.getSchema(configuration);
+      const schemaResponse = tracer.startActiveSpan(
+        "getSchema",
+        async (span) => {
+          const schemaResponse = await connector.getSchema(configuration);
+
+          span.end();
+
+          return schemaResponse;
+        }
+      );
+
+      return schemaResponse;
     }
   );
 
@@ -187,11 +209,22 @@ export async function startServer<RawConfiguration, Configuration, State>(
       }>
     ) => {
       request.log.debug({ requestBody: request.body }, "Query Request");
-      const queryResponse = await connector.query(
-        configuration,
-        state,
-        request.body
+
+      const queryResponse = await tracer.startActiveSpan(
+        "handleQuery",
+        async (span) => {
+          const queryResponse = await connector.query(
+            configuration,
+            state,
+            request.body
+          );
+
+          span.end();
+
+          return queryResponse;
+        }
       );
+
       request.log.debug({ responseBody: queryResponse }, "Query Response");
       return queryResponse;
     }
@@ -210,12 +243,26 @@ export async function startServer<RawConfiguration, Configuration, State>(
     },
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
       request.log.debug({ requestBody: request.body }, "Query Explain Request");
-      const explainResponse = await connector.queryExplain(
-        configuration,
-        state,
-        request.body
+
+      const explainResponse = await tracer.startActiveSpan(
+        "handleQueryExplain",
+        async (span) => {
+          const explainResponse = await connector.queryExplain(
+            configuration,
+            state,
+            request.body
+          );
+
+          span.end();
+
+          return explainResponse;
+        }
       );
-      request.log.debug({ responseBody: explainResponse }, "Query Explain Response");
+
+      request.log.debug(
+        { responseBody: explainResponse },
+        "Query Explain Response"
+      );
       return explainResponse;
     }
   );
@@ -237,11 +284,22 @@ export async function startServer<RawConfiguration, Configuration, State>(
       }>
     ): Promise<MutationResponse> => {
       request.log.debug({ requestBody: request.body }, "Mutation Request");
-      const mutuationResponse = await connector.mutation(
-        configuration,
-        state,
-        request.body
+
+      const mutuationResponse = await tracer.startActiveSpan(
+        "handleMutation",
+        async (span) => {
+          const mutuationResponse = await connector.mutation(
+            configuration,
+            state,
+            request.body
+          );
+
+          span.end();
+
+          return mutuationResponse;
+        }
       );
+
       request.log.debug(
         { responseBody: mutuationResponse },
         "Mutation Response"
@@ -262,18 +320,36 @@ export async function startServer<RawConfiguration, Configuration, State>(
       },
     },
     async (request: FastifyRequest<{ Body: MutationRequest }>) => {
-      request.log.debug({ requestBody: request.body }, "Mutation Explain Request");
-      const explainResponse = await connector.mutationExplain(
-        configuration,
-        state,
-        request.body
+      request.log.debug(
+        { requestBody: request.body },
+        "Mutation Explain Request"
       );
-      request.log.debug({ responseBody: explainResponse }, "Mutation Explain Response");
+
+      const explainResponse = await tracer.startActiveSpan(
+        "handleMutationExplain",
+        async (span) => {
+          const explainResponse = await connector.mutationExplain(
+            configuration,
+            state,
+            request.body
+          );
+
+          span.end();
+
+          return explainResponse;
+        }
+      );
+
+      request.log.debug(
+        { responseBody: explainResponse },
+        "Mutation Explain Response"
+      );
       return explainResponse;
     }
   );
 
   server.setErrorHandler(function (error, _request, reply) {
+    // pino trace instrumentation will add trace information to log output
     this.log.error(error);
 
     if (error.validation) {
@@ -300,6 +376,6 @@ export async function startServer<RawConfiguration, Configuration, State>(
     await server.listen({ port: options.port, host: "0.0.0.0" });
   } catch (error) {
     server.log.error(error);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
