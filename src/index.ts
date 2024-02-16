@@ -50,7 +50,7 @@ export function getServeCommand<RawConfiguration, Configuration, State>(
     .addOption(
       new Option("--port <port>")
         .env("PORT")
-        .default(8100)
+        .default(8080)
         .argParser(parseIntOption)
     )
     .addOption(
