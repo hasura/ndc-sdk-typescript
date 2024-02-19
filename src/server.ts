@@ -62,15 +62,6 @@ export interface ServerOptions {
   prettyPrintLogs: string;
 }
 
-class ConfigurationError extends Error {
-  validationErrors: AjvErrorObject[];
-
-  constructor(message: string, errors: AjvErrorObject[]) {
-    super(message);
-    this.validationErrors = errors;
-  }
-}
-
 export async function startServer<Configuration, State>(
   connector: Connector<Configuration, State>,
   options: ServerOptions
