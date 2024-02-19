@@ -8,43 +8,15 @@ import {
   MutationResponse,
 } from "./schema";
 
-import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
-
-export interface Connector<RawConfiguration, Configuration, State> {
-  /**
-   * Return jsonschema for the raw configuration for this connector
-   */
-  getRawConfigurationSchema(): JSONSchemaObject;
+export interface Connector<Configuration, State> {
 
   /**
-   * Return an empty raw configuration, to be manually filled in by the user to allow connection to the data source.
-   *
-   * The exact shape depends on your connector's configuration. Example:
-   *
-   * ```json
-   * {
-   *   "connection_string": "",
-   *   "tables": []
-   * }
-   * ```
-   */
-  makeEmptyConfiguration(): RawConfiguration;
-  /**
-   * Take a raw configuration, update it where appropriate by connecting to the underlying data source, and otherwise return it as-is
-   * For example, if our configuration includes a list of tables, we may want to fetch an updated list from the data source.
-   * This is also used to "hidrate" an "empty" configuration where a user has provided connection details and little else.
-   * @param rawConfiguration a base raw configuration
-   */
-  updateConfiguration(
-    rawConfiguration: RawConfiguration
-  ): Promise<RawConfiguration>;
-  /**
-   * Validate the raw configuration provided by the user,
-   * returning a configuration error or a validated [`Connector::Configuration`].
+   * Validate the configuration files provided by the user, returning a validated 'Configuration',
+   * or throwing an 'Error'. Throwing an error prevents Connector startup.
    * @param configuration
    */
-  validateRawConfiguration(
-    rawConfiguration: RawConfiguration
+  parseConfiguration(
+    configurationDir: string
   ): Promise<Configuration>;
 
   /**
