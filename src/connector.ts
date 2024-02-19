@@ -11,8 +11,8 @@ import {
 export interface Connector<Configuration, State> {
 
   /**
-   * Validate the raw configuration files provided by the user,
-   * returning a configuration error or a validated [`Connector::Configuration`].
+   * Validate the configuration files provided by the user, returning a validated 'Configuration',
+   * or throwing an 'Error'. Throwing an error prevents Connector startup.
    * @param configuration
    */
   parseConfiguration(
