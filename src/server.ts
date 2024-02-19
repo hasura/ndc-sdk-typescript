@@ -1,4 +1,3 @@
-import fs from "fs";
 import Fastify, { FastifyRequest } from "fastify";
 
 import { Connector } from "./connector";
@@ -21,7 +20,7 @@ import {
   QueryRequest,
 } from "./schema";
 
-import Ajv, { Options as AjvOptions, ErrorObject as AjvErrorObject } from "ajv";
+import { Options as AjvOptions } from "ajv";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
