@@ -69,7 +69,12 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
-      initTelemetry(options.otelServiceName, options.otelExporterOtlpEndpoint);
+      if (options.otelExporterOtlpEndpoint) {
+        initTelemetry(
+          options.otelServiceName,
+          options.otelExporterOtlpEndpoint
+        );
+      }
       await start_server(connector, options);
     });
   }
