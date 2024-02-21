@@ -1,5 +1,6 @@
 import fs from "fs";
 import Fastify, { FastifyRequest } from "fastify";
+import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -55,8 +56,6 @@ export interface ServerOptions {
   configuration: string;
   port: number;
   serviceTokenSecret: string | undefined;
-  otlpEndpoint: string | undefined;
-  serviceName: string | undefined;
   logLevel: string;
   prettyPrintLogs: string;
 }
@@ -69,6 +68,8 @@ class ConfigurationError extends Error {
     this.validation_errors = errors;
   }
 }
+
+const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
 
 export async function start_server<RawConfiguration, Configuration, State>(
   connector: Connector<RawConfiguration, Configuration, State>,
@@ -142,7 +143,16 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return connector.get_capabilities(configuration);
+      return tracer.startActiveSpan(
+        "getCapabilities",
+        (span) => {
+          try {
+            return connector.get_capabilities(configuration);
+          } finally {
+            span.end();
+          }
+        }
+      );
     }
   );
 
@@ -165,7 +175,17 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return connector.get_schema(configuration);
+      return tracer.startActiveSpan(
+        "getSchema",
+        async (span) => {
+          try {
+            return await connector.get_schema(configuration);
+          }
+          finally {
+            span.end();
+          }
+        }
+      );
     }
   );
 
@@ -186,11 +206,19 @@ export async function start_server<RawConfiguration, Configuration, State>(
       }>
     ) => {
       request.log.debug({ requestBody: request.body }, "Query Request");
-      const queryResponse = await connector.query(
-        configuration,
-        state,
-        request.body
+
+      const queryResponse = await tracer.startActiveSpan(
+        "handleQuery",
+        async (span) => {
+          try {
+            return await connector.query(configuration, state, request.body);
+          }
+          finally {
+            span.end();
+          }
+        }
       );
+
       request.log.debug({ responseBody: queryResponse }, "Query Response");
       return queryResponse;
     }
@@ -209,11 +237,19 @@ export async function start_server<RawConfiguration, Configuration, State>(
     },
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
       request.log.debug({ requestBody: request.body }, "Explain Request");
-      const explainResponse = await connector.explain(
-        configuration,
-        state,
-        request.body
+
+      const explainResponse = await tracer.startActiveSpan(
+        "handleQueryExplain",
+        async (span) => {
+          try {
+            return await connector.explain(configuration, state, request.body);
+          }
+          finally {
+            span.end();
+          }
+        }
       );
+
       request.log.debug({ responseBody: explainResponse }, "Explain Response");
       return explainResponse;
     }
@@ -236,11 +272,18 @@ export async function start_server<RawConfiguration, Configuration, State>(
       }>
     ): Promise<MutationResponse> => {
       request.log.debug({ requestBody: request.body }, "Mutation Request");
-      const mutuationResponse = await connector.mutation(
-        configuration,
-        state,
-        request.body
+
+      const mutuationResponse = await tracer.startActiveSpan(
+        "handleMutation",
+        async (span) => {
+          try {
+            return await connector.mutation(configuration, state, request.body);
+          } finally {
+            span.end();
+          }
+        }
       );
+
       request.log.debug(
         { responseBody: mutuationResponse },
         "Mutation Response"
@@ -250,6 +293,7 @@ export async function start_server<RawConfiguration, Configuration, State>(
   );
 
   server.setErrorHandler(function (error, _request, reply) {
+    // pino trace instrumentation will add trace information to log output
     this.log.error(error);
 
     if (error.validation) {
@@ -265,6 +309,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
         details: error.details ?? {},
       });
     } else {
+      const span = opentelemetry.trace.getActiveSpan();
+      span?.recordException(error);
+      span?.setStatus({ code: SpanStatusCode.ERROR });
+
       reply.status(500).send({
         message: error.message,
         details: {},
@@ -276,6 +324,6 @@ export async function start_server<RawConfiguration, Configuration, State>(
     await server.listen({ port: options.port, host: "0.0.0.0" });
   } catch (error) {
     server.log.error(error);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }

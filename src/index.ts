@@ -1,3 +1,11 @@
+// Initializing telemetry must be done before importing any other module
+// Users of the SDK can choose to initialize it manually themselves, so we check that
+// that hasn't already been done
+import * as instrumentation from "./instrumentation";
+if (!instrumentation.isInitialized()) {
+  instrumentation.initTelemetry();
+}
+
 import { Connector } from "./connector";
 import { Command, Option, InvalidOptionArgumentError } from "commander";
 import { ServerOptions, start_server } from "./server";
@@ -46,15 +54,17 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
     .addOption(
       new Option("--service-token-secret <secret>").env("SERVICE_TOKEN_SECRET")
     )
-    .addOption(new Option("--otlp_endpoint <endpoint>").env("OTLP_ENDPOINT"))
-    .addOption(new Option("--service-name <name>").env("OTEL_SERVICE_NAME"))
-    .addOption(new Option("--log-level <level>").env("LOG_LEVEL").default("info"))
-    .addOption(new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false));
+    .addOption(
+      new Option("--log-level <level>").env("LOG_LEVEL").default("info")
+    )
+    .addOption(
+      new Option("--pretty-print-logs").env("PRETTY_PRINT_LOGS").default(false)
+    );
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
       await start_server(connector, options);
-    })
+    });
   }
   return command;
 }
