@@ -1,3 +1,11 @@
+// Initializing telemetry must be done before importing any other module
+// Users of the SDK can choose to initialize it manually themselves, so we check that
+// that hasn't already been done
+import * as instrumentation from "./instrumentation";
+if (!instrumentation.isInitialized()) {
+  instrumentation.initTelemetry();
+}
+
 import { Connector } from "./connector";
 import { Command, Option, InvalidOptionArgumentError } from "commander";
 import { ServerOptions, startServer } from "./server";
@@ -40,15 +48,13 @@ export function getServeCommand<Configuration, State>(
     .addOption(
       new Option("--service-token-secret <secret>").env("HASURA_SERVICE_TOKEN_SECRET")
     )
-    .addOption(new Option("--otlp-endpoint <endpoint>").env("OTEL_EXPORTER_OTLP_ENDPOINT"))
-    .addOption(new Option("--service-name <name>").env("OTEL_SERVICE_NAME"))
     .addOption(new Option("--log-level <level>").env("HASURA_LOG_LEVEL").default("info"))
     .addOption(new Option("--pretty-print-logs").env("HASURA_PRETTY_PRINT_LOGS").default(false));
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
       await startServer(connector, options);
-    })
+    });
   }
   return command;
 }
