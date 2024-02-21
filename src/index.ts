@@ -1,7 +1,11 @@
-// the instrumentation file must be the first import: https://opentelemetry.io/docs/languages/js/getting-started/nodejs/#setup
-// we should consider instead using the require flag per the open telemetry instructions.
-// this may be viable if we provide a standard dockerfile with the correct command
-import { initTelemetry } from "./instrumentation";
+// Initializing telemetry must be done before importing any other module
+// Users of the SDK can choose to initialize it manually themselves, so we check that
+// that hasn't already been done
+import * as instrumentation from "./instrumentation";
+if (!instrumentation.isInitialized()) {
+  instrumentation.initTelemetry();
+}
+
 import { Connector } from "./connector";
 import { Command, Option, InvalidOptionArgumentError } from "commander";
 import { ServerOptions, start_server } from "./server";
@@ -51,16 +55,6 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
       new Option("--service-token-secret <secret>").env("SERVICE_TOKEN_SECRET")
     )
     .addOption(
-      new Option("--otel-exporter-otlp-endpoint <endpoint>")
-        .env("OTEL_EXPORTER_OTLP_ENDPOINT")
-        .default("http://localhost:4318")
-    )
-    .addOption(
-      new Option("--otel-service-name <name>")
-        .env("OTEL_SERVICE_NAME")
-        .default("hasura-ndc")
-    )
-    .addOption(
       new Option("--log-level <level>").env("LOG_LEVEL").default("info")
     )
     .addOption(
@@ -69,12 +63,6 @@ export function get_serve_command<RawConfiguration, Configuration, State>(
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
-      if (options.otelExporterOtlpEndpoint) {
-        initTelemetry(
-          options.otelServiceName,
-          options.otelExporterOtlpEndpoint
-        );
-      }
       await start_server(connector, options);
     });
   }

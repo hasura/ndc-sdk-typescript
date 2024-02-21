@@ -2,8 +2,10 @@
   "name": "@hasura/ndc-sdk-typescript",
   "version": "1.2.8",
   "description": "",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./instrumentation": "./dist/instrumentation.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "regenerate-schema": "./typegen/regenerate-schema.sh",

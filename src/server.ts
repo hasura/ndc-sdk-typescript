@@ -56,8 +56,6 @@ export interface ServerOptions {
   configuration: string;
   port: number;
   serviceTokenSecret: string | undefined;
-  otelExporterOtlpEndpoint: string;
-  otelServiceName: string;
   logLevel: string;
   prettyPrintLogs: string;
 }

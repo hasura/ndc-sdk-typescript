@@ -1,18 +1,22 @@
-/*instrumentation.ts*/
 import * as opentelemetry from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
-
-import {
-  PeriodicExportingMetricReader,
-} from "@opentelemetry/sdk-metrics";
-
+import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 
-export function initTelemetry(serviceName: string, endpoint: string) {
-  const sdk = new opentelemetry.NodeSDK({
+let sdk: opentelemetry.NodeSDK | null = null;
+
+export function initTelemetry(defaultServiceName: string = "hasura-ndc", defaultEndpoint: string = "http://localhost:4318") {
+  if (isInitialized()) {
+    throw new Error("Telemetry has already been initialized!");
+  }
+
+  const serviceName = process.env["OTEL_SERVICE_NAME"] || defaultServiceName;
+  const endpoint = process.env["OTEL_EXPORTER_OTLP_ENDPOINT"] || defaultEndpoint;
+
+  sdk = new opentelemetry.NodeSDK({
     serviceName,
     traceExporter: new OTLPTraceExporter({
       url: `${endpoint}/v1/traces`,
@@ -35,9 +39,12 @@ export function initTelemetry(serviceName: string, endpoint: string) {
   });
 
   process.on("beforeExit", async () => {
-    await sdk.shutdown();
+    await sdk?.shutdown();
   });
 
   sdk.start();
 }
 
+export function isInitialized(): boolean {
+  return sdk !== null;
+}
