@@ -1,6 +1,10 @@
 import fs from "fs";
 import Fastify, { FastifyRequest } from "fastify";
-import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
+import opentelemetry, {
+  Attributes,
+  Span,
+  SpanStatusCode,
+} from "@opentelemetry/api";
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -24,6 +28,7 @@ import {
 
 import Ajv, { Options as AjvOptions, ErrorObject as AjvErrorObject } from "ajv";
 import fastify from "fastify";
+import { withActiveSpan } from "./instrumentation";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -143,15 +148,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return tracer.startActiveSpan(
+      return withActiveSpan(
+        tracer,
         "getCapabilities",
-        (span) => {
-          try {
-            return connector.get_capabilities(configuration);
-          } finally {
-            span.end();
-          }
-        }
+        () => connector.get_capabilities(configuration)
       );
     }
   );
@@ -175,16 +175,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return tracer.startActiveSpan(
+      return withActiveSpan(
+        tracer,
         "getSchema",
-        async (span) => {
-          try {
-            return await connector.get_schema(configuration);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.get_schema(configuration)
       );
     }
   );
@@ -207,16 +201,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
     ) => {
       request.log.debug({ requestBody: request.body }, "Query Request");
 
-      const queryResponse = await tracer.startActiveSpan(
+      const queryResponse = await withActiveSpan(
+        tracer,
         "handleQuery",
-        async (span) => {
-          try {
-            return await connector.query(configuration, state, request.body);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.query(configuration, state, request.body)
       );
 
       request.log.debug({ responseBody: queryResponse }, "Query Response");
@@ -238,16 +226,10 @@ export async function start_server<RawConfiguration, Configuration, State>(
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
       request.log.debug({ requestBody: request.body }, "Explain Request");
 
-      const explainResponse = await tracer.startActiveSpan(
+      const explainResponse = await withActiveSpan(
+        tracer,
         "handleQueryExplain",
-        async (span) => {
-          try {
-            return await connector.explain(configuration, state, request.body);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.explain(configuration, state, request.body)
       );
 
       request.log.debug({ responseBody: explainResponse }, "Explain Response");
@@ -273,22 +255,17 @@ export async function start_server<RawConfiguration, Configuration, State>(
     ): Promise<MutationResponse> => {
       request.log.debug({ requestBody: request.body }, "Mutation Request");
 
-      const mutuationResponse = await tracer.startActiveSpan(
+      const mutationResponse = await withActiveSpan(
+        tracer,
         "handleMutation",
-        async (span) => {
-          try {
-            return await connector.mutation(configuration, state, request.body);
-          } finally {
-            span.end();
-          }
-        }
+        () => connector.mutation(configuration, state, request.body)
       );
 
       request.log.debug(
-        { responseBody: mutuationResponse },
+        { responseBody: mutationResponse },
         "Mutation Response"
       );
-      return mutuationResponse;
+      return mutationResponse;
     }
   );
 

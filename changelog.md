@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+- OpenTelemetry spans are now attributed with `internal.visibility: "user"` so that they show up in the Hasura Console
+- `@hasura/ndc-sdk-typescript/instrumentation` now exports `withActiveSpan` to wrap a span around a function and `withInternalActiveSpan` which does the same but without the `internal.visibility: "user"` attribute.
+- Automatic OpenTelemetry instrumentation for fetch requests has been added
+
 ## 1.3.0
 - Add OpenTelemetry support
   - Set env var `OTEL_EXPORTER_OTLP_ENDPOINT` to the endpoint to send OpenTelemetry to
