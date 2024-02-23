@@ -26,7 +26,7 @@ import {
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
-import { USER_VISIBLE_SPAN, withActiveSpan } from "./instrumentation";
+import { withActiveSpan } from "./instrumentation";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -66,9 +66,6 @@ export interface ServerOptions {
 }
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
-const userVisible: Attributes = {
-  "internal.visibility": "user",
-};
 
 export async function startServer<Configuration, State>(
   connector: Connector<Configuration, State>,
@@ -131,8 +128,7 @@ export async function startServer<Configuration, State>(
       return withActiveSpan(
         tracer,
         "getCapabilities",
-        () => connector.getCapabilities(configuration),
-        USER_VISIBLE_SPAN
+        () => connector.getCapabilities(configuration)
       );
     }
   );
@@ -159,8 +155,7 @@ export async function startServer<Configuration, State>(
       return withActiveSpan(
         tracer,
         "getSchema",
-        () => connector.getSchema(configuration),
-        USER_VISIBLE_SPAN
+        () => connector.getSchema(configuration)
       );
     }
   );
@@ -186,8 +181,7 @@ export async function startServer<Configuration, State>(
       const queryResponse = await withActiveSpan(
         tracer,
         "handleQuery",
-        () => connector.query(configuration, state, request.body),
-        USER_VISIBLE_SPAN
+        () => connector.query(configuration, state, request.body)
       );
 
       request.log.debug({ responseBody: queryResponse }, "Query Response");
@@ -212,8 +206,7 @@ export async function startServer<Configuration, State>(
       const explainResponse = await withActiveSpan(
         tracer,
         "handleQueryExplain",
-        () => connector.queryExplain(configuration, state, request.body),
-        USER_VISIBLE_SPAN
+        () => connector.queryExplain(configuration, state, request.body)
       );
 
       request.log.debug(
@@ -245,8 +238,7 @@ export async function startServer<Configuration, State>(
       const mutationResponse = await withActiveSpan(
         tracer,
         "handleMutation",
-        () => connector.mutation(configuration, state, request.body),
-        USER_VISIBLE_SPAN
+        () => connector.mutation(configuration, state, request.body)
       );
 
       request.log.debug(
@@ -277,8 +269,7 @@ export async function startServer<Configuration, State>(
       const explainResponse = await withActiveSpan(
         tracer,
         "handleMutationExplain",
-        () => connector.mutationExplain(configuration, state, request.body),
-        USER_VISIBLE_SPAN
+        () => connector.mutationExplain(configuration, state, request.body)
       );
 
       request.log.debug(

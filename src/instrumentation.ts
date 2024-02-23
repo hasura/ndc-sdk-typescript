@@ -35,17 +35,17 @@ export function initTelemetry(
     instrumentations: [
       new HttpInstrumentation({
         applyCustomAttributesOnSpan: (span, request, response) => {
-          span.setAttribute("internal.visibility", "user");
+          span.setAttributes(USER_VISIBLE_SPAN_ATTRIBUTE);
         },
       }),
       new FastifyInstrumentation({
         requestHook: (span, info) => {
-          span.setAttribute("internal.visibility", "user");
+          span.setAttributes(USER_VISIBLE_SPAN_ATTRIBUTE);
         },
       }),
       new FetchInstrumentation({
         applyCustomAttributesOnSpan: (span, request, response) => {
-          span.setAttribute("internal.visibility", "user");
+          span.setAttributes(USER_VISIBLE_SPAN_ATTRIBUTE);;
         },
       }),
       // the pino instrumentation adds trace information to pino logs
@@ -68,11 +68,20 @@ export function isInitialized(): boolean {
   return sdk !== null;
 }
 
-export const USER_VISIBLE_SPAN: Attributes = {
+export const USER_VISIBLE_SPAN_ATTRIBUTE: Attributes = {
   "internal.visibility": "user",
 };
 
 export function withActiveSpan<TReturn>(
+  tracer: Tracer,
+  name: string,
+  func: (span: Span) => TReturn,
+  attributes?: Attributes
+): TReturn {
+  return withInternalActiveSpan(tracer, name, func, attributes ? { ...USER_VISIBLE_SPAN_ATTRIBUTE, ...attributes } : USER_VISIBLE_SPAN_ATTRIBUTE);
+}
+
+export function withInternalActiveSpan<TReturn>(
   tracer: Tracer,
   name: string,
   func: (span: Span) => TReturn,
