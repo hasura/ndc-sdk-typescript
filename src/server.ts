@@ -1,5 +1,9 @@
 import Fastify, { FastifyRequest } from "fastify";
-import opentelemetry, { SpanStatusCode } from '@opentelemetry/api';
+import opentelemetry, {
+  Attributes,
+  Span,
+  SpanStatusCode,
+} from "@opentelemetry/api";
 
 import { Connector } from "./connector";
 import { ConnectorError } from "./error";
@@ -22,6 +26,7 @@ import {
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
+import { USER_VISIBLE_SPAN, withActiveSpan } from "./instrumentation";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -61,12 +66,17 @@ export interface ServerOptions {
 }
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
+const userVisible: Attributes = {
+  "internal.visibility": "user",
+};
 
 export async function startServer<Configuration, State>(
   connector: Connector<Configuration, State>,
   options: ServerOptions
 ) {
-  const configuration = await connector.parseConfiguration(options.configuration);
+  const configuration = await connector.parseConfiguration(
+    options.configuration
+  );
 
   const metrics = {}; // todo
 
@@ -118,15 +128,11 @@ export async function startServer<Configuration, State>(
       },
     },
     (_request: FastifyRequest): CapabilitiesResponse => {
-      return tracer.startActiveSpan(
+      return withActiveSpan(
+        tracer,
         "getCapabilities",
-        (span) => {
-          try {
-            return connector.getCapabilities(configuration);
-          } finally {
-            span.end();
-          }
-        }
+        () => connector.getCapabilities(configuration),
+        USER_VISIBLE_SPAN
       );
     }
   );
@@ -150,16 +156,11 @@ export async function startServer<Configuration, State>(
       },
     },
     (_request): Promise<SchemaResponse> => {
-      return tracer.startActiveSpan(
+      return withActiveSpan(
+        tracer,
         "getSchema",
-        async (span) => {
-          try {
-            return await connector.getSchema(configuration);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.getSchema(configuration),
+        USER_VISIBLE_SPAN
       );
     }
   );
@@ -182,16 +183,11 @@ export async function startServer<Configuration, State>(
     ) => {
       request.log.debug({ requestBody: request.body }, "Query Request");
 
-      const queryResponse = await tracer.startActiveSpan(
+      const queryResponse = await withActiveSpan(
+        tracer,
         "handleQuery",
-        async (span) => {
-          try {
-            return await connector.query(configuration, state, request.body);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.query(configuration, state, request.body),
+        USER_VISIBLE_SPAN
       );
 
       request.log.debug({ responseBody: queryResponse }, "Query Response");
@@ -213,18 +209,17 @@ export async function startServer<Configuration, State>(
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
       request.log.debug({ requestBody: request.body }, "Explain Request");
 
-      const explainResponse = await tracer.startActiveSpan(
+      const explainResponse = await withActiveSpan(
+        tracer,
         "handleQueryExplain",
-        async (span) => {
-          try {
-            return await connector.queryExplain(configuration, state, request.body);
-          }
-          finally {
-            span.end();
-          }
-        }
+        () => connector.queryExplain(configuration, state, request.body),
+        USER_VISIBLE_SPAN
       );
-      request.log.debug({ responseBody: explainResponse }, "Query Explain Response");
+
+      request.log.debug(
+        { responseBody: explainResponse },
+        "Query Explain Response"
+      );
       return explainResponse;
     }
   );
@@ -247,22 +242,18 @@ export async function startServer<Configuration, State>(
     ): Promise<MutationResponse> => {
       request.log.debug({ requestBody: request.body }, "Mutation Request");
 
-      const mutuationResponse = await tracer.startActiveSpan(
+      const mutationResponse = await withActiveSpan(
+        tracer,
         "handleMutation",
-        async (span) => {
-          try {
-            return await connector.mutation(configuration, state, request.body);
-          } finally {
-            span.end();
-          }
-        }
+        () => connector.mutation(configuration, state, request.body),
+        USER_VISIBLE_SPAN
       );
 
       request.log.debug(
-        { responseBody: mutuationResponse },
+        { responseBody: mutationResponse },
         "Mutation Response"
       );
-      return mutuationResponse;
+      return mutationResponse;
     }
   );
 
@@ -278,19 +269,22 @@ export async function startServer<Configuration, State>(
       },
     },
     async (request: FastifyRequest<{ Body: MutationRequest }>) => {
-      request.log.debug({ requestBody: request.body }, "Mutation Explain Request");
-      const explainResponse = await tracer.startActiveSpan(
-        "handleMutationExplain",
-        async (span) => {
-          try {
-            return await connector.mutationExplain(configuration, state, request.body);
-          }
-          finally {
-            span.end();
-          }
-        }
+      request.log.debug(
+        { requestBody: request.body },
+        "Mutation Explain Request"
       );
-      request.log.debug({ responseBody: explainResponse }, "Mutation Explain Response");
+
+      const explainResponse = await withActiveSpan(
+        tracer,
+        "handleMutationExplain",
+        () => connector.mutationExplain(configuration, state, request.body),
+        USER_VISIBLE_SPAN
+      );
+
+      request.log.debug(
+        { responseBody: explainResponse },
+        "Mutation Explain Response"
+      );
       return explainResponse;
     }
   );
