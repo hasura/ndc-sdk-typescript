@@ -2,6 +2,7 @@
   "name": "@hasura/ndc-sdk-typescript",
   "version": "4.2.0",
   "description": "",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./instrumentation": "./dist/instrumentation.js"
