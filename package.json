@@ -1,6 +1,6 @@
 {
   "name": "@hasura/ndc-sdk-typescript",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "",
   "exports": {
     ".": "./dist/index.js",
@@ -11,7 +11,10 @@
     "regenerate-schema": "./typegen/regenerate-schema.sh",
     "build": "tsc"
   },
-  "keywords": ["hasura", "ndc"],
+  "keywords": [
+    "hasura",
+    "ndc"
+  ],
   "author": "Hasura",
   "license": "Apache-2.0",
   "dependencies": {
@@ -19,6 +22,7 @@
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-metrics-otlp-proto": "^0.48.0",
     "@opentelemetry/instrumentation-fastify": "^0.33.0",
+    "@opentelemetry/instrumentation-fetch": "^0.48.0",
     "@opentelemetry/instrumentation-http": "^0.48.0",
     "@opentelemetry/instrumentation-pino": "^0.35.0",
     "@opentelemetry/resources": "^1.21.0",
