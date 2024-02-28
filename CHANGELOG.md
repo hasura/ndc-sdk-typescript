@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.2.1
+- Add `main` and `types` properties to the `package.json` to enable `node10` module resolution to be used by projects using legacy TypeScript compiler settings
+
 ## 4.2.0
 - OpenTelemetry spans are now attributed with `internal.visibility: "user"` so that they show up in the Hasura Console
 - `@hasura/ndc-sdk-typescript/instrumentation` now exports `withActiveSpan` to wrap a span around a function and `withInternalActiveSpan` which does the same but without the `internal.visibility: "user"` attribute.
