@@ -6,6 +6,26 @@
  */
 
 /**
+ * Representations of scalar types
+ */
+export type TypeRepresentation =
+  | {
+      type: "boolean";
+    }
+  | {
+      type: "string";
+    }
+  | {
+      type: "number";
+    }
+  | {
+      type: "integer";
+    }
+  | {
+      type: "enum";
+      one_of: string[];
+    };
+/**
  * Types track the valid representations of values as JSON
  */
 export type Type =
@@ -365,6 +385,10 @@ export interface SchemaResponse {
  * The definition of a scalar type, i.e. types that can be used as the types of columns.
  */
 export interface ScalarType {
+  /**
+   * An optional description of valid values for this scalar type
+   */
+  representation?: TypeRepresentation | null;
   /**
    * A map from aggregate function names to their definitions. Result type names must be defined scalar types declared in ScalarTypesCapabilities.
    */
