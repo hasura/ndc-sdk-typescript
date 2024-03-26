@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.3.0
+- Updated to support [v0.1.1 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#011)
+  - A more [precise definition of equality operators](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#note-syntactic-equality)
+  - Scalar types can now [specify a representation](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#type-representations), including an enum representation
+
 ## 4.2.1
 - Add `main` and `types` properties to the `package.json` to enable `node10` module resolution to be used by projects using legacy TypeScript compiler settings
 
