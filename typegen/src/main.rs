@@ -1,4 +1,4 @@
-use ndc_client::models::{
+use ndc_models::{
     CapabilitiesResponse, ErrorResponse, ExplainResponse, MutationRequest, MutationResponse,
     QueryRequest, QueryResponse, SchemaResponse,
 };

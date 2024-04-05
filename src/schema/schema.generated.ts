@@ -16,10 +16,57 @@ export type TypeRepresentation =
       type: "string";
     }
   | {
+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
       type: "number";
     }
   | {
+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
       type: "integer";
+    }
+  | {
+      type: "int8";
+    }
+  | {
+      type: "int16";
+    }
+  | {
+      type: "int32";
+    }
+  | {
+      type: "int64";
+    }
+  | {
+      type: "float32";
+    }
+  | {
+      type: "float64";
+    }
+  | {
+      type: "bigdecimal";
+    }
+  | {
+      type: "uuid";
+    }
+  | {
+      type: "date";
+    }
+  | {
+      type: "timestamp";
+    }
+  | {
+      type: "timestamptz";
+    }
+  | {
+      type: "geography";
+    }
+  | {
+      type: "geometry";
+    }
+  | {
+      type: "bytes";
+    }
+  | {
+      type: "json";
     }
   | {
       type: "enum";
@@ -386,7 +433,7 @@ export interface SchemaResponse {
  */
 export interface ScalarType {
   /**
-   * An optional description of valid values for this scalar type
+   * A description of valid values for this scalar type. Defaults to `TypeRepresentation::JSON` if omitted
    */
   representation?: TypeRepresentation | null;
   /**
