@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.0
+- Updated to support [v0.1.2 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#012)
+  - More precise [type representations](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#type-representations) of scalar types were added and the general numeric ones were deprecated (`number` and `integer`)
+
 ## 4.3.0
 - Updated to support [v0.1.1 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#011)
   - A more [precise definition of equality operators](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#note-syntactic-equality)
