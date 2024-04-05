@@ -16,11 +16,11 @@ export type TypeRepresentation =
       type: "string";
     }
   | {
-      /** @deprecated since NDC Spec v0.1.2 - used sized numeric types instead */ // Manually added :(
+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
       type: "number";
     }
   | {
-      /** @deprecated since NDC Spec v0.1.2 - used sized numeric types instead */ // Manually added :(
+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
       type: "integer";
     }
   | {
