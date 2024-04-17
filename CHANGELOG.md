@@ -1,7 +1,7 @@
 # Changelog
 
 ## 4.5.0
-- Support b3 (zipkin) OpenTelemetry trace propagation headers ([#28](https://github.com/hasura/ndc-sdk-typescript/pull/28))
+- Support [b3](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-propagator-b3#b3-formats) (zipkin) OpenTelemetry trace propagation headers ([#28](https://github.com/hasura/ndc-sdk-typescript/pull/28))
 
 ## 4.4.0
 - Updated to support [v0.1.2 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#012)
