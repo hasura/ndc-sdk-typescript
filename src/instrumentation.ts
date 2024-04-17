@@ -54,6 +54,10 @@ export function initTelemetry(
       new PinoInstrumentation({
         logHook: (span, record, level) => {
           record["resource.service.name"] = serviceName;
+          // This logs the parent span ID in the pino logs, useful for debugging propagation.
+          // parentSpanId is an internal property, hence the cast to any, because I can't
+          // seem to find a way to get at it through a supported API 😭
+          record["parent_span_id"] = (span as any).parentSpanId;
         },
       }),
     ],
