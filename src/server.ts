@@ -176,7 +176,7 @@ export async function startServer<Configuration, State>(
         Body: QueryRequest;
       }>
     ) => {
-      request.log.debug({ requestBody: request.body }, "Query Request");
+      request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Query Request");
 
       const queryResponse = await withActiveSpan(
         tracer,
@@ -201,7 +201,7 @@ export async function startServer<Configuration, State>(
       },
     },
     async (request: FastifyRequest<{ Body: QueryRequest }>) => {
-      request.log.debug({ requestBody: request.body }, "Explain Request");
+      request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Explain Request");
 
       const explainResponse = await withActiveSpan(
         tracer,
@@ -233,7 +233,7 @@ export async function startServer<Configuration, State>(
         Body: MutationRequest;
       }>
     ): Promise<MutationResponse> => {
-      request.log.debug({ requestBody: request.body }, "Mutation Request");
+      request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Mutation Request");
 
       const mutationResponse = await withActiveSpan(
         tracer,
@@ -262,7 +262,7 @@ export async function startServer<Configuration, State>(
     },
     async (request: FastifyRequest<{ Body: MutationRequest }>) => {
       request.log.debug(
-        { requestBody: request.body },
+        { requestHeaders: request.headers, requestBody: request.body },
         "Mutation Explain Request"
       );
 
