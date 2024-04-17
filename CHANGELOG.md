@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.5.0
+- Support b3 (zipkin) OpenTelemetry trace propagation headers ([#28](https://github.com/hasura/ndc-sdk-typescript/pull/28))
+
 ## 4.4.0
 - Updated to support [v0.1.2 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#012)
   - More precise [type representations](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#type-representations) of scalar types were added and the general numeric ones were deprecated (`number` and `integer`)
