@@ -7,6 +7,8 @@ import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { Attributes, Span, SpanStatusCode, Tracer } from "@opentelemetry/api";
+import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from "@opentelemetry/core";
+import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3"
 
 let sdk: opentelemetry.NodeSDK | null = null;
 
@@ -55,6 +57,14 @@ export function initTelemetry(
         },
       }),
     ],
+    textMapPropagator: new CompositePropagator({
+      propagators: [
+        new W3CTraceContextPropagator(),
+        new W3CBaggagePropagator(),
+        new B3Propagator(),
+        new B3Propagator({ injectEncoding: B3InjectEncoding.MULTI_HEADER }),
+      ]
+    }),
   });
 
   process.on("beforeExit", async () => {
