@@ -8,7 +8,8 @@ type ErrorCode =
   | /** Unprocessable Content - The request could not be handled because, while the request was well-formed, it was not semantically correct. For example, a value for a custom scalar type was provided, but with an incorrect type.*/ 422
   | /** Internal Server Error - The request could not be handled because of an error on the server */ 500
   | /** Not Supported - The request could not be handled because it relies on an unsupported capability. Note: this ought to indicate an error on the caller side, since the caller should not generate requests which are incompatible with the indicated capabilities. */ 501
-  | /** Bad Gateway - The request could not be handled because an upstream service was unavailable or returned an unexpected response, e.g., a connection to a database server failed. */ 502;
+  | /** Bad Gateway - The request could not be handled because an upstream service was unavailable or returned an unexpected response, e.g., a connection to a database server failed. */ 502
+  | number;
 
 export class ConnectorError extends Error {
   statusCode: ErrorCode;
