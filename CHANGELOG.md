@@ -2,6 +2,7 @@
 
 ## 4.6.0
 - Use [`prom-client`](https://github.com/siimon/prom-client) to implement the metrics endpoint ([#29](https://github.com/hasura/ndc-sdk-typescript/pull/29))
+- Allow any error code in custom HTTP responses ([#30](https://github.com/hasura/ndc-sdk-typescript/pull/30))
 
 ## 4.5.0
 - Support [b3](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-propagator-b3#b3-formats) (zipkin) OpenTelemetry trace propagation headers ([#28](https://github.com/hasura/ndc-sdk-typescript/pull/28))
