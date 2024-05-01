@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node20",
+  "extends": "@tsconfig/node18",
   "compilerOptions": {
     "rootDir": "./src",
     "resolveJsonModule": true,
