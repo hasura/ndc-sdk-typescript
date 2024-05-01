@@ -1,3 +1,4 @@
+import { Registry } from "prom-client";
 import {
   CapabilitiesResponse,
   QueryRequest,
@@ -32,7 +33,7 @@ export interface Connector<Configuration, State> {
    */
   tryInitState(
     configuration: Configuration,
-    metrics: unknown
+    metrics: Registry
   ): Promise<State>;
   /**
    *

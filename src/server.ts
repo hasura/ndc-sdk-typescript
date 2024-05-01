@@ -27,6 +27,7 @@ import {
 
 import { Options as AjvOptions } from "ajv";
 import { withActiveSpan } from "./instrumentation";
+import { Registry, collectDefaultMetrics } from "prom-client";
 
 // Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -75,7 +76,8 @@ export async function startServer<Configuration, State>(
     options.configuration
   );
 
-  const metrics = {}; // todo
+  const metrics = new Registry();
+  collectDefaultMetrics({ register: metrics });
 
   const state = await connector.tryInitState(configuration, metrics);
 
@@ -138,7 +140,8 @@ export async function startServer<Configuration, State>(
   });
 
   server.get("/metrics", (_request) => {
-    return connector.fetchMetrics(configuration, state);
+    connector.fetchMetrics(configuration, state);
+    return metrics.metrics();
   });
 
   server.get(
