@@ -89,6 +89,9 @@
     "QueryCapabilities": {
       "title": "Query Capabilities",
       "type": "object",
+      "required": [
+        "nested_fields"
+      ],
       "properties": {
         "aggregates": {
           "description": "Does the connector support aggregate queries",
@@ -122,12 +125,48 @@
               "type": "null"
             }
           ]
+        },
+        "nested_fields": {
+          "description": "Does the connector support nested fields",
+          "allOf": [
+            {
+              "$ref": "#/definitions/NestedFieldCapabilities"
+            }
+          ]
         }
       }
     },
     "LeafCapability": {
       "description": "A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.",
       "type": "object"
+    },
+    "NestedFieldCapabilities": {
+      "title": "Nested Field Capabilities",
+      "type": "object",
+      "properties": {
+        "filter_by": {
+          "description": "Does the connector support filtering by values of nested fields",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "order_by": {
+          "description": "Does the connector support ordering by values of nested fields",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     },
     "MutationCapabilities": {
       "title": "Mutation Capabilities",
@@ -421,6 +460,21 @@
               "type": "string",
               "enum": [
                 "float64"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Arbitrary-precision integer string",
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "biginteger"
               ]
             }
           }
@@ -799,6 +853,37 @@
               "$ref": "#/definitions/Type"
             }
           ]
+        },
+        "arguments": {
+          "description": "The arguments available to the field - Matches implementation from CollectionInfo",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ArgumentInfo"
+          }
+        }
+      }
+    },
+    "ArgumentInfo": {
+      "title": "Argument Info",
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "description": {
+          "description": "Argument description",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "description": "The name of the type of this argument",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Type"
+            }
+          ]
         }
       }
     },
@@ -848,30 +933,6 @@
           "additionalProperties": {
             "$ref": "#/definitions/ForeignKeyConstraint"
           }
-        }
-      }
-    },
-    "ArgumentInfo": {
-      "title": "Argument Info",
-      "type": "object",
-      "required": [
-        "type"
-      ],
-      "properties": {
-        "description": {
-          "description": "Argument description",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "type": {
-          "description": "The name of the type of this argument",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Type"
-            }
-          ]
         }
       }
     },
@@ -1196,6 +1257,12 @@
                   "type": "null"
                 }
               ]
+            },
+            "arguments": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/Argument"
+              }
             }
           }
         },
@@ -1274,6 +1341,47 @@
             "fields": {
               "$ref": "#/definitions/NestedField"
             }
+          }
+        }
+      ]
+    },
+    "Argument": {
+      "title": "Argument",
+      "oneOf": [
+        {
+          "description": "The argument is provided by reference to a variable",
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "variable"
+              ]
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "The argument is provided as a literal value",
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "literal"
+              ]
+            },
+            "value": true
           }
         }
       ]
@@ -1397,6 +1505,16 @@
             "name": {
               "description": "The name of the column",
               "type": "string"
+            },
+            "field_path": {
+              "description": "Path to a nested field within an object column",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
             },
             "path": {
               "description": "Any relationships to traverse to reach this column",
@@ -1657,6 +1775,16 @@
               "description": "The name of the column",
               "type": "string"
             },
+            "field_path": {
+              "description": "Path to a nested field within an object column",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
+            },
             "path": {
               "description": "Any relationships to traverse to reach this column",
               "type": "array",
@@ -1682,6 +1810,16 @@
             "name": {
               "description": "The name of the column",
               "type": "string"
+            },
+            "field_path": {
+              "description": "Path to a nested field within an object column",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
             }
           }
         }
@@ -1805,47 +1943,6 @@
                 "$ref": "#/definitions/RelationshipArgument"
               }
             }
-          }
-        }
-      ]
-    },
-    "Argument": {
-      "title": "Argument",
-      "oneOf": [
-        {
-          "description": "The argument is provided by reference to a variable",
-          "type": "object",
-          "required": [
-            "name",
-            "type"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "variable"
-              ]
-            },
-            "name": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "description": "The argument is provided as a literal value",
-          "type": "object",
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": [
-                "literal"
-              ]
-            },
-            "value": true
           }
         }
       ]

@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.0.0
+- Updated to support [v0.1.3 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#013) ([#32](https://github.com/hasura/ndc-sdk-typescript/pull/32))
+  - Breaking change: new `nested_fields` property on `QueryCapabilities`; set it to `{}` to retain previous v0.1.2 semantics and not support new v0.1.3 capabilities.
+  - Support [field arguments](https://hasura.github.io/ndc-spec/specification/queries/arguments.html#field-arguments)
+  - Support [filtering](https://hasura.github.io/ndc-spec/specification/queries/filtering.html#referencing-nested-fields-within-columns) and [ordering](https://hasura.github.io/ndc-spec/specification/queries/sorting.html#type-column) by nested fields
+  - Added a [`biginteger` type representation](https://hasura.github.io/ndc-spec/specification/schema/scalar-types.html#type-representations)
+
 ## 4.6.0
 - Use [`prom-client`](https://github.com/siimon/prom-client) to implement the metrics endpoint ([#29](https://github.com/hasura/ndc-sdk-typescript/pull/29))
 - Allow any error code in custom HTTP responses ([#30](https://github.com/hasura/ndc-sdk-typescript/pull/30))

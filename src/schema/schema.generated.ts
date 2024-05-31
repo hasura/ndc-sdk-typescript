@@ -42,6 +42,9 @@ export type TypeRepresentation =
       type: "float64";
     }
   | {
+      type: "biginteger";
+    }
+  | {
       type: "bigdecimal";
     }
   | {
@@ -155,6 +158,9 @@ export type Field =
        * When the type of the column is a (possibly-nullable) array or object, the caller can request a subset of the complete column data, by specifying fields to fetch here. If omitted, the column data will be fetched in full.
        */
       fields?: NestedField | null;
+      arguments?: {
+        [k: string]: Argument;
+      };
     }
   | {
       type: "relationship";
@@ -171,6 +177,15 @@ export type Field =
       };
     };
 export type NestedField = NestedObject | NestedArray;
+export type Argument =
+  | {
+      type: "variable";
+      name: string;
+    }
+  | {
+      type: "literal";
+      value: unknown;
+    };
 export type RelationshipArgument =
   | {
       type: "variable";
@@ -192,6 +207,10 @@ export type OrderByTarget =
        * The name of the column
        */
       name: string;
+      /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
       /**
        * Any relationships to traverse to reach this column
        */
@@ -256,6 +275,10 @@ export type ComparisonTarget =
        */
       name: string;
       /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
+      /**
        * Any relationships to traverse to reach this column
        */
       path: PathElement[];
@@ -266,6 +289,10 @@ export type ComparisonTarget =
        * The name of the column
        */
       name: string;
+      /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
     };
 export type UnaryComparisonOperator = "is_null";
 export type ComparisonValue =
@@ -304,15 +331,6 @@ export type ExistsInCollection =
       arguments: {
         [k: string]: RelationshipArgument;
       };
-    };
-export type Argument =
-  | {
-      type: "variable";
-      name: string;
-    }
-  | {
-      type: "literal";
-      value: unknown;
     };
 export type RelationshipType = "object" | "array";
 /**
@@ -377,11 +395,25 @@ export interface QueryCapabilities {
    * Does the connector support explaining queries
    */
   explain?: LeafCapability | null;
+  /**
+   * Does the connector support nested fields
+   */
+  nested_fields: NestedFieldCapabilities;
 }
 /**
  * A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.
  */
 export interface LeafCapability {}
+export interface NestedFieldCapabilities {
+  /**
+   * Does the connector support filtering by values of nested fields
+   */
+  filter_by?: LeafCapability | null;
+  /**
+   * Does the connector support ordering by values of nested fields
+   */
+  order_by?: LeafCapability | null;
+}
 export interface MutationCapabilities {
   /**
    * Does the connector support executing multiple mutations in a transaction.
@@ -485,6 +517,22 @@ export interface ObjectField {
    * The type of this field
    */
   type: Type;
+  /**
+   * The arguments available to the field - Matches implementation from CollectionInfo
+   */
+  arguments?: {
+    [k: string]: ArgumentInfo;
+  };
+}
+export interface ArgumentInfo {
+  /**
+   * Argument description
+   */
+  description?: string | null;
+  /**
+   * The name of the type of this argument
+   */
+  type: Type;
 }
 export interface CollectionInfo {
   /**
@@ -519,16 +567,6 @@ export interface CollectionInfo {
   foreign_keys: {
     [k: string]: ForeignKeyConstraint;
   };
-}
-export interface ArgumentInfo {
-  /**
-   * Argument description
-   */
-  description?: string | null;
-  /**
-   * The name of the type of this argument
-   */
-  type: Type;
 }
 export interface UniquenessConstraint {
   /**
