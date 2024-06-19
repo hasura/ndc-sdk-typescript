@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.1.0
+- Updated to support [v0.1.4 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#014) ([#33](https://github.com/hasura/ndc-sdk-typescript/pull/33))
+  - Support for [aggregates](https://hasura.github.io/ndc-spec/specification/queries/aggregates.html) over nested fields
+
 ## 5.0.0
 - Updated to support [v0.1.3 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#013) ([#32](https://github.com/hasura/ndc-sdk-typescript/pull/32))
   - Breaking change: new `nested_fields` property on `QueryCapabilities`; set it to `{}` to retain previous v0.1.2 semantics and not support new v0.1.3 capabilities.

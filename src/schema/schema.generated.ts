@@ -132,6 +132,10 @@ export type Aggregate =
        */
       column: string;
       /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
+      /**
        * Whether or not only distinct items should be counted
        */
       distinct: boolean;
@@ -142,6 +146,10 @@ export type Aggregate =
        * The column to apply the aggregation function to
        */
       column: string;
+      /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
       /**
        * Single column aggregate function name.
        */
@@ -222,6 +230,10 @@ export type OrderByTarget =
        * The column to apply the aggregation function to
        */
       column: string;
+      /**
+       * Path to a nested field within an object column
+       */
+      field_path?: string[] | null;
       /**
        * Single column aggregate function name.
        */
@@ -398,7 +410,7 @@ export interface QueryCapabilities {
   /**
    * Does the connector support nested fields
    */
-  nested_fields: NestedFieldCapabilities;
+  nested_fields?: NestedFieldCapabilities;
 }
 /**
  * A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.
@@ -413,6 +425,10 @@ export interface NestedFieldCapabilities {
    * Does the connector support ordering by values of nested fields
    */
   order_by?: LeafCapability | null;
+  /**
+   * Does the connector support aggregating values within nested fields
+   */
+  aggregates?: LeafCapability | null;
 }
 export interface MutationCapabilities {
   /**
