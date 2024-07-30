@@ -238,14 +238,16 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "ndc-models"
-version = "0.1.4"
-source = "git+http://github.com/hasura/ndc-spec.git?tag=v0.1.4#20172e3b2552b78d16dbafcd047f559ced420309"
+version = "0.1.5"
+source = "git+http://github.com/hasura/ndc-spec.git?tag=v0.1.5#78f52768bd02a8289194078a5abc2432c8e3a758"
 dependencies = [
  "indexmap 2.2.6",
+ "ref-cast",
  "schemars",
  "serde",
  "serde_json",
  "serde_with",
+ "smol_str",
 ]
 
 [[package]]
@@ -291,6 +293,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "291ec9ab5efd934aaf503a6466c5d5251535d108ee747472c3977cc5acc868ef"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "ref-cast"
+version = "1.0.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccf0a6f84d5f1d581da8b41b47ec8600871962f2a528115b542b362d4b744931"
+dependencies = [
+ "ref-cast-impl",
+]
+
+[[package]]
+name = "ref-cast-impl"
+version = "1.0.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcc303e793d3734489387d205e9b186fac9c6cfacedd98cbb2e8a5943595f3e6"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.55",
 ]
 
 [[package]]
