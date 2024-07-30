@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- The connector now listens on both ipv4 and ipv6 interfaces by default. This can be configured by using the `HASURA_CONNECTOR_HOST` environment variable, which sets the host the web server listens on.
+
 ## 5.1.0
 - Updated to support [v0.1.4 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#014) ([#33](https://github.com/hasura/ndc-sdk-typescript/pull/33))
   - Support for [aggregates](https://hasura.github.io/ndc-spec/specification/queries/aggregates.html) over nested fields
