@@ -312,7 +312,7 @@ export async function startServer<Configuration, State>(
   });
 
   try {
-    await server.listen({ port: options.port, host: "0.0.0.0" });
+    await server.listen({ port: options.port, host: "::" });
   } catch (error) {
     server.log.error(error);
     process.exitCode = 1;
