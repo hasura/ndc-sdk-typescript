@@ -50,3 +50,21 @@ jobs:
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Get version from tag
+        id: get-version
+        run: |
+          echo "tagged_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - uses: mindsers/changelog-reader-action@v2
+        id: changelog-reader
+        with:
+          version: ${{ steps.get-version.outputs.tagged_version }}
+          path: ./CHANGELOG.md
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          tag_name: v${{ steps.get-version.outputs.tagged_version }}
+          body: ${{ steps.changelog-reader.outputs.changes }}
