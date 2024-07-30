@@ -60,6 +60,7 @@ const errorResponses = {
 
 export interface ServerOptions {
   configuration: string;
+  host: string;
   port: number;
   serviceTokenSecret: string | undefined;
   logLevel: string;
@@ -312,7 +313,7 @@ export async function startServer<Configuration, State>(
   });
 
   try {
-    await server.listen({ port: options.port, host: "0.0.0.0" });
+    await server.listen({ port: options.port, host: options.host });
   } catch (error) {
     server.log.error(error);
     process.exitCode = 1;

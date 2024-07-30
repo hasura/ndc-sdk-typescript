@@ -40,6 +40,11 @@ export function getServeCommand<Configuration, State>(
         .makeOptionMandatory(true)
     )
     .addOption(
+      new Option("--host <host>")
+        .env("HASURA_CONNECTOR_HOST")
+        .default("::")
+    )
+    .addOption(
       new Option("--port <port>")
         .env("HASURA_CONNECTOR_PORT")
         .default(8080)
