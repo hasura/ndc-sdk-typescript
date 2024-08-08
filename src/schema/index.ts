@@ -1,5 +1,6 @@
 import { JSONSchemaObject } from "@json-schema-tools/meta-schema";
 import schema from "./schema.generated.json";
+import { VERSION } from "./version.generated";
 
 function schemaForType(type_name: string): JSONSchemaObject {
   return {
@@ -29,5 +30,6 @@ export {
   MutationRequestSchema,
   MutationResponseSchema,
   ErrorResponseSchema,
-  ValidateResponseSchema
+  ValidateResponseSchema,
+  VERSION,
 };

@@ -1,5 +1,11 @@
 # NDC TypeScript SDK Changelog
 
+## [6.0.0] - 2024-08-08
+Breaking changes ([#36](https://github.com/hasura/ndc-sdk-typescript/pull/36)):
+- `Connector.healthCheck` has been removed and replaced with `Connector.getHealthReadiness`, which only returns whether the connector is able to accept requests, not whether any underlying connections to data sources actually work.
+- The `/health` endpoint is now unauthorized, allowing healthchecks to be performed without authorization.
+- `Connector.getCapabilities` now returns `Capabilities` instead of `CapabilitiesResponse`. The SDK will now take care of adding the correct NDC version to the `Capabilities` on behalf of the connector.
+
 ## [5.2.0] - 2024-07-30
 - The connector now listens on both ipv4 and ipv6 interfaces by default. This can be configured by using the `HASURA_CONNECTOR_HOST` environment variable, which sets the host the web server listens on. ([#34](https://github.com/hasura/ndc-sdk-typescript/pull/34))
 - Updated to support [v0.1.5 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#015) ([#35](https://github.com/hasura/ndc-sdk-typescript/pull/35))

@@ -1,7 +1,5 @@
 import Fastify, { FastifyRequest } from "fastify";
 import opentelemetry, {
-  Attributes,
-  Span,
   SpanStatusCode,
 } from "@opentelemetry/api";
 
@@ -23,6 +21,7 @@ import {
   MutationResponse,
   MutationRequest,
   QueryRequest,
+  VERSION
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
@@ -98,6 +97,11 @@ export async function startServer<Configuration, State>(
   );
 
   server.addHook("preHandler", (request, reply, done) => {
+    // Don't apply authorization to the healthcheck endpoint
+    if (request.routeOptions.method === "GET" && request.routeOptions.url === "/health") {
+      return done();
+    }
+
     const expectedAuthHeader =
       options.serviceTokenSecret === undefined
         ? undefined
@@ -131,13 +135,18 @@ export async function startServer<Configuration, State>(
       return withActiveSpan(
         tracer,
         "getCapabilities",
-        () => connector.getCapabilities(configuration)
+        () => ({
+          version: VERSION,
+          capabilities: connector.getCapabilities(configuration),
+        })
       );
     }
   );
 
-  server.get("/health", (_request): Promise<undefined> => {
-    return connector.healthCheck(configuration, state);
+  server.get("/health", async (_request): Promise<undefined> => {
+    return connector.getHealthReadiness
+      ? await connector.getHealthReadiness(configuration, state)
+      : undefined;
   });
 
   server.get("/metrics", (_request) => {

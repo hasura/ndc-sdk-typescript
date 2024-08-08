@@ -1,10 +1,10 @@
 use ndc_models::{
     CapabilitiesResponse, ErrorResponse, ExplainResponse, MutationRequest, MutationResponse,
-    QueryRequest, QueryResponse, SchemaResponse,
+    QueryRequest, QueryResponse, SchemaResponse, VERSION,
 };
 use schemars::{schema_for, JsonSchema};
 use serde_derive::{Deserialize, Serialize};
-use std::{error::Error, fs, env};
+use std::{env, error::Error, fs, path::PathBuf};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[schemars(title = "SchemaRoot")]
@@ -30,20 +30,34 @@ struct ValidateResponse {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().collect::<Vec<_>>();
-    let path = if args.len() >= 2 {
-        Ok(&args[1])
+    let (schema_json_path, version_path) = if args.len() >= 2 {
+        let schema_json_path = [args[1].as_str(), "schema.generated.json"]
+            .iter()
+            .collect::<PathBuf>();
+        let version_path = [args[1].as_str(), "version.generated.ts"]
+            .iter()
+            .collect::<PathBuf>();
+        Ok((schema_json_path, version_path))
     } else {
-        Err("Schema file path not passed on command line")
+        Err("Schema directory not passed on command line")
     }?;
-    print!("Generating Schema to {path}...");
 
+    print!(
+        "Generating schema JSON to {}...",
+        schema_json_path.to_str().unwrap()
+    );
     let schema_json = serde_json::to_string_pretty(&schema_for!(SchemaRoot))?;
+    fs::write(schema_json_path, schema_json + "\n")?;
+    println!("done!");
 
+    print!(
+        "Generating schema version to {}...",
+        version_path.to_str().unwrap()
+    );
     fs::write(
-        path,
-        schema_json + "\n",
+        version_path,
+        format!("export const VERSION = \"{VERSION}\";\n"),
     )?;
-
     println!("done!");
 
     Ok(())
