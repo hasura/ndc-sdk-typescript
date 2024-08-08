@@ -2,7 +2,7 @@
 set -eu -o pipefail
 
 # Generate JSON schema from Rust types
-cargo run -- ./src/schema/schema.generated.json
+cargo run -- ./src/schema
 
 # Generate TypeScript types from JSON schema
 json2ts -i ./src/schema/schema.generated.json -o ./src/schema/schema.generated.ts --no-additionalProperties

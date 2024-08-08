@@ -1,6 +1,6 @@
 import { Registry } from "prom-client";
 import {
-  CapabilitiesResponse,
+  Capabilities,
   QueryRequest,
   QueryResponse,
   SchemaResponse,
@@ -35,6 +35,7 @@ export interface Connector<Configuration, State> {
     configuration: Configuration,
     metrics: Registry
   ): Promise<State>;
+
   /**
    *
    * Update any metrics from the state
@@ -70,10 +71,10 @@ export interface Connector<Configuration, State> {
    * This function implements the [capabilities endpoint](https://hasura.github.io/ndc-spec/specification/capabilities.html)
    * from the NDC specification.
    *
-   * This function should be syncronous
+   * This function should be synchronous
    * @param configuration
    */
-  getCapabilities(configuration: Configuration): CapabilitiesResponse;
+  getCapabilities(configuration: Configuration): Capabilities;
 
   /**
    * Get the connector's schema.

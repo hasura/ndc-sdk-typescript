@@ -1,7 +1,5 @@
 import Fastify, { FastifyRequest } from "fastify";
 import opentelemetry, {
-  Attributes,
-  Span,
   SpanStatusCode,
 } from "@opentelemetry/api";
 
@@ -23,6 +21,7 @@ import {
   MutationResponse,
   MutationRequest,
   QueryRequest,
+  VERSION
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
@@ -136,7 +135,10 @@ export async function startServer<Configuration, State>(
       return withActiveSpan(
         tracer,
         "getCapabilities",
-        () => connector.getCapabilities(configuration)
+        () => ({
+          version: VERSION,
+          capabilities: connector.getCapabilities(configuration),
+        })
       );
     }
   );
