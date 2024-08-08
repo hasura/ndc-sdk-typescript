@@ -48,17 +48,21 @@ export interface Connector<Configuration, State> {
    * @param state
    */
   fetchMetrics(configuration: Configuration, state: State): Promise<undefined>;
+
   /**
    * Check the health of the connector.
    *
-   * For example, this function should check that the connector
-   * is able to reach its data source over the network.
+   * This should simply verify that the connector is ready to start accepting
+   * requests. It should not verify that external data sources are available.
    *
-   * Should throw if the check fails, else resolve
+   * This function is optional to implement; if left unimplemented, a default
+   * implementation will be used that returns healthy once the connector
+   * webserver is running.
+   *
    * @param configuration
    * @param state
    */
-  healthCheck(configuration: Configuration, state: State): Promise<undefined>;
+  getHealthReadiness?(configuration: Configuration, state: State): Promise<undefined>;
 
   /**
    * Get the connector's capabilities.

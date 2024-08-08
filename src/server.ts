@@ -98,6 +98,11 @@ export async function startServer<Configuration, State>(
   );
 
   server.addHook("preHandler", (request, reply, done) => {
+    // Don't apply authorization to the healthcheck endpoint
+    if (request.routeOptions.method === "GET" && request.routeOptions.url === "/health") {
+      return done();
+    }
+
     const expectedAuthHeader =
       options.serviceTokenSecret === undefined
         ? undefined
@@ -136,8 +141,10 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.get("/health", (_request): Promise<undefined> => {
-    return connector.healthCheck(configuration, state);
+  server.get("/health", async (_request): Promise<undefined> => {
+    return connector.getHealthReadiness
+      ? await connector.getHealthReadiness(configuration, state)
+      : undefined;
   });
 
   server.get("/metrics", (_request) => {
