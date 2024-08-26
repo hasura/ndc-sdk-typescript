@@ -1,5 +1,9 @@
 # NDC TypeScript SDK Changelog
 
+## [6.1.0] - 2024-08-26
+- Updated to support [v0.1.6 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#016) ([#37](https://github.com/hasura/ndc-sdk-typescript/pull/37))
+  - Support for [querying nested collections](https://hasura.github.io/ndc-spec/specification/queries/filtering.html#nested-collections) inside an EXISTS expression in a predicate
+
 ## [6.0.0] - 2024-08-08
 Breaking changes ([#36](https://github.com/hasura/ndc-sdk-typescript/pull/36)):
 - `Connector.healthCheck` has been removed and replaced with `Connector.getHealthReadiness`, which only returns whether the connector is able to accept requests, not whether any underlying connections to data sources actually work.

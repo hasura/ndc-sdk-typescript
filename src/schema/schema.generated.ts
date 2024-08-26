@@ -82,7 +82,7 @@ export type Type =
   | {
       type: "named";
       /**
-       * The name can refer to a primitive type or a scalar type
+       * The name can refer to a scalar or object type
        */
       name: string;
     }
@@ -343,6 +343,17 @@ export type ExistsInCollection =
       arguments: {
         [k: string]: RelationshipArgument;
       };
+    }
+  | {
+      type: "nested_collection";
+      column_name: string;
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
+       * Path to a nested collection via object columns
+       */
+      field_path?: string[];
     };
 export type RelationshipType = "object" | "array";
 /**
@@ -411,6 +422,10 @@ export interface QueryCapabilities {
    * Does the connector support nested fields
    */
   nested_fields?: NestedFieldCapabilities;
+  /**
+   * Does the connector support EXISTS predicates
+   */
+  exists?: ExistsCapabilities;
 }
 /**
  * A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.
@@ -429,6 +444,12 @@ export interface NestedFieldCapabilities {
    * Does the connector support aggregating values within nested fields
    */
   aggregates?: LeafCapability | null;
+}
+export interface ExistsCapabilities {
+  /**
+   * Does the connector support ExistsInCollection::NestedCollection
+   */
+  nested_collections?: LeafCapability | null;
 }
 export interface MutationCapabilities {
   /**
