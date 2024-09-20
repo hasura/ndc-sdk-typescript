@@ -1,9 +1,9 @@
 # NDC TypeScript SDK Changelog
 
 ## [7.0.0] - 2024-09-20
-- Added support for exporting OpenTelemetry traces and metrics over GRPC. A new environment variable `OTEL_EXPORTER_OTLP_PROTOCOL` lets you switch between `http/proto` and `grpc`.
-  - **Breaking change**: the default OpenTelemetry exporter has changed from `http/proto` sending to `http://localhost:4318` to `grpc` sending to `http://localhost:4317`. To return to the old defaults, set the following environment variables:
-    - `OTEL_EXPORTER_OTLP_PROTOCOL="http/proto"`
+- Added support for exporting OpenTelemetry traces and metrics over GRPC. A new environment variable `OTEL_EXPORTER_OTLP_PROTOCOL` lets you switch between `http/protobuf` and `grpc`.
+  - **Breaking change**: the default OpenTelemetry exporter has changed from `http/protobuf` sending to `http://localhost:4318` to `grpc` sending to `http://localhost:4317`. To return to the old defaults, set the following environment variables:
+    - `OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"`
     - `OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"`
 
 ## [6.1.0] - 2024-08-26
