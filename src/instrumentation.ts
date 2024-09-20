@@ -1,6 +1,8 @@
 import * as opentelemetry from "@opentelemetry/sdk-node";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
-import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
+import * as traceHttpProto from "@opentelemetry/exporter-trace-otlp-proto";
+import * as metricsHttpProto from "@opentelemetry/exporter-metrics-otlp-proto";
+import * as traceGrpc from "@opentelemetry/exporter-trace-otlp-grpc";
+import * as metricsGrpc from "@opentelemetry/exporter-metrics-otlp-grpc";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
@@ -12,9 +14,12 @@ import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3"
 
 let sdk: opentelemetry.NodeSDK | null = null;
 
+export type Protocol = "grpc" | "http/protobuf";
+
 export function initTelemetry(
   defaultServiceName: string = "hasura-ndc",
-  defaultEndpoint: string = "http://localhost:4318"
+  defaultEndpoint: string = "http://localhost:4317",
+  defaultProtocol: Protocol = "grpc",
 ) {
   if (isInitialized()) {
     throw new Error("Telemetry has already been initialized!");
@@ -23,16 +28,15 @@ export function initTelemetry(
   const serviceName = process.env["OTEL_SERVICE_NAME"] || defaultServiceName;
   const endpoint =
     process.env["OTEL_EXPORTER_OTLP_ENDPOINT"] || defaultEndpoint;
+  const protocol = process.env["OTEL_EXPORTER_OTLP_PROTOCOL"] || defaultProtocol;
+
+  let exporters = getExporters(protocol, endpoint);
 
   sdk = new opentelemetry.NodeSDK({
     serviceName,
-    traceExporter: new OTLPTraceExporter({
-      url: `${endpoint}/v1/traces`,
-    }),
+    traceExporter: exporters.traceExporter,
     metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: `${endpoint}/v1/metrics`,
-      }),
+      exporter: exporters.metricsExporter,
     }),
     instrumentations: [
       new HttpInstrumentation({
@@ -76,6 +80,36 @@ export function initTelemetry(
   });
 
   sdk.start();
+}
+
+type Exporters = {
+  traceExporter: opentelemetry.node.SpanExporter,
+  metricsExporter: opentelemetry.metrics.PushMetricExporter,
+}
+
+function getExporters(protocol: Protocol | string, endpoint: string): Exporters {
+  switch (protocol) {
+    case "grpc":
+      return {
+        traceExporter: new traceGrpc.OTLPTraceExporter({
+          url: endpoint,
+        }),
+        metricsExporter: new metricsGrpc.OTLPMetricExporter({
+          url: endpoint,
+        })
+      };
+    case "http/protobuf":
+      return {
+        traceExporter: new traceHttpProto.OTLPTraceExporter({
+          url: `${endpoint}/v1/traces`,
+        }),
+        metricsExporter: new metricsHttpProto.OTLPMetricExporter({
+          url: `${endpoint}/v1/metrics`,
+        })
+      };
+    default:
+      throw new Error(`Unsupported protocol: {protocol}`);
+  }
 }
 
 export function isInitialized(): boolean {
