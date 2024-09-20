@@ -1,8 +1,8 @@
 import * as opentelemetry from "@opentelemetry/sdk-node";
 import * as traceHttpProto from "@opentelemetry/exporter-trace-otlp-proto";
 import * as metricsHttpProto from "@opentelemetry/exporter-metrics-otlp-proto";
-import * as traceGrpcProto from "@opentelemetry/exporter-trace-otlp-grpc";
-import * as metricsGrpcProto from "@opentelemetry/exporter-metrics-otlp-grpc";
+import * as traceGrpc from "@opentelemetry/exporter-trace-otlp-grpc";
+import * as metricsGrpc from "@opentelemetry/exporter-metrics-otlp-grpc";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { FastifyInstrumentation } from "@opentelemetry/instrumentation-fastify";
@@ -91,10 +91,10 @@ function getExporters(protocol: Protocol | string, endpoint: string): Exporters 
   switch (protocol) {
     case "grpc":
       return {
-        traceExporter: new traceGrpcProto.OTLPTraceExporter({
+        traceExporter: new traceGrpc.OTLPTraceExporter({
           url: endpoint,
         }),
-        metricsExporter: new metricsGrpcProto.OTLPMetricExporter({
+        metricsExporter: new metricsGrpc.OTLPMetricExporter({
           url: endpoint,
         })
       };
