@@ -1,5 +1,11 @@
 # NDC TypeScript SDK Changelog
 
+## [7.0.0] - 2024-09-20
+- Added support for exporting OpenTelemetry traces and metrics over GRPC. A new environment variable `OTEL_EXPORTER_OTLP_PROTOCOL` lets you switch between `http/proto` and `grpc`.
+  - **Breaking change**: the default OpenTelemetry exporter has changed from `http/proto` sending to `http://localhost:4318` to `grpc` sending to `http://localhost:4317`. To return to the old defaults, set the following environment variables:
+    - `OTEL_EXPORTER_OTLP_PROTOCOL="http/proto"`
+    - `OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"`
+
 ## [6.1.0] - 2024-08-26
 - Updated to support [v0.1.6 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#016) ([#37](https://github.com/hasura/ndc-sdk-typescript/pull/37))
   - Support for [querying nested collections](https://hasura.github.io/ndc-spec/specification/queries/filtering.html#nested-collections) inside an EXISTS expression in a predicate

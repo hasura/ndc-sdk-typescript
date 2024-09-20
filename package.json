@@ -1,6 +1,6 @@
 {
   "name": "@hasura/ndc-sdk-typescript",
-  "version": "6.1.0",
+  "version": "7.0.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,10 +22,11 @@
   "dependencies": {
     "@json-schema-tools/meta-schema": "^1.7.0",
     "@opentelemetry/api": "^1.8.0",
-    "@opentelemetry/exporter-metrics-otlp-proto": "^0.51.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.53.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.53.0",
     "@opentelemetry/instrumentation-fastify": "^0.36.0",
-    "@opentelemetry/instrumentation-fetch": "^0.51.0",
-    "@opentelemetry/instrumentation-http": "^0.51.0",
+    "@opentelemetry/instrumentation-fetch": "^0.53.0",
+    "@opentelemetry/instrumentation-http": "^0.53.0",
     "@opentelemetry/instrumentation-pino": "^0.38.0",
     "@opentelemetry/resources": "^1.24.0",
     "@opentelemetry/sdk-metrics": "^1.24.0",
