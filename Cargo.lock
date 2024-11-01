@@ -238,8 +238,8 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "ndc-models"
-version = "0.1.6"
-source = "git+http://github.com/hasura/ndc-spec.git?tag=v0.1.6#d1be19e9cdd86ac7b6ad003ff82b7e5b4e96b84f"
+version = "0.2.0"
+source = "git+http://github.com/hasura/ndc-spec.git?branch=main#e07a5293cb44ba8083944076c2c64b95f1d19cac"
 dependencies = [
  "indexmap 2.2.6",
  "ref-cast",

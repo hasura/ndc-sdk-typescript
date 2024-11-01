@@ -28,11 +28,22 @@ import { Options as AjvOptions } from "ajv";
 import { withActiveSpan } from "./instrumentation";
 import { Registry, collectDefaultMetrics } from "prom-client";
 
-// Create custom Ajv options to handle Rust's uint32 which is a format used in the JSON schemas, so this converts that to a number
+// Create custom Ajv options to handle Rust's uint types which are formats used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
   allErrors: true,
   removeAdditional: true,
   formats: {
+    uint: {
+      validate: (data: any) => {
+        return (
+          typeof data === "number" &&
+          data >= 0 &&
+          data <= 4294967295 &&
+          Number.isInteger(data)
+        );
+      },
+      type: "number",
+    },
     uint32: {
       validate: (data: any) => {
         return (

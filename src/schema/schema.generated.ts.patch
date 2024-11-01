@@ -1,27 +1,15 @@
 diff --git a/src/schema/schema.generated.ts b/src/schema/schema.generated.ts
-index d90dd1d..3c9af6b 100644
+index 372b5ee..dc8fed2 100644
 --- a/src/schema/schema.generated.ts
 +++ b/src/schema/schema.generated.ts
-@@ -16,9 +16,11 @@ export type TypeRepresentation =
-       type: "string";
-     }
-   | {
-+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
-       type: "number";
-     }
-   | {
-+      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
-       type: "integer";
-     }
-   | {
-@@ -714,9 +716,7 @@ export interface RowSet {
-       }[]
-     | null;
+@@ -1101,9 +1101,7 @@ export interface RowSet {
+    */
+   groups?: Group[] | null;
  }
 -export interface RowFieldValue {
 -  [k: string]: unknown;
 -}
 +export type RowFieldValue = unknown; // Manually corrected :(
- export interface MutationRequest {
+ export interface Group {
    /**
-    * The mutation operations to perform
+    * Values of dimensions which identify this group

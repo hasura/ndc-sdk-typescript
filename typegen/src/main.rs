@@ -1,6 +1,6 @@
 use ndc_models::{
     CapabilitiesResponse, ErrorResponse, ExplainResponse, MutationRequest, MutationResponse,
-    QueryRequest, QueryResponse, SchemaResponse, VERSION,
+    QueryRequest, QueryResponse, SchemaResponse, VERSION, VERSION_HEADER_NAME,
 };
 use schemars::{schema_for, JsonSchema};
 use serde_derive::{Deserialize, Serialize};
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     fs::write(
         version_path,
-        format!("export const VERSION = \"{VERSION}\";\n"),
+        format!("export const VERSION = \"{VERSION}\";\nexport const VERSION_HEADER_NAME=\"{VERSION_HEADER_NAME}\"\n"),
     )?;
     println!("done!");
 
