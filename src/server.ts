@@ -21,12 +21,15 @@ import {
   MutationResponse,
   MutationRequest,
   QueryRequest,
-  VERSION
+  VERSION,
+  VERSION_HEADER_NAME,
+  ErrorResponse,
 } from "./schema";
 
 import { Options as AjvOptions } from "ajv";
 import { withActiveSpan } from "./instrumentation";
 import { Registry, collectDefaultMetrics } from "prom-client";
+import semver from "semver";
 
 // Create custom Ajv options to handle Rust's uint types which are formats used in the JSON schemas, so this converts that to a number
 const customAjvOptions: AjvOptions = {
@@ -107,10 +110,11 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.addHook("preHandler", (request, reply, done) => {
+  // Authorization handler
+  server.addHook("preHandler", async (request, reply) => {
     // Don't apply authorization to the healthcheck endpoint
     if (request.routeOptions.method === "GET" && request.routeOptions.url === "/health") {
-      return done();
+      return;
     }
 
     const expectedAuthHeader =
@@ -119,15 +123,56 @@ export async function startServer<Configuration, State>(
         : `Bearer ${options.serviceTokenSecret}`;
 
     if (request.headers.authorization === expectedAuthHeader) {
-      return done();
+      return;
     } else {
-      reply.code(401).send({
+      reply.code(401).send(<ErrorResponse>{
         message: "Internal Error",
         details: {
           cause: "Bearer token does not match.",
         },
       });
 
+      return reply;
+    }
+  });
+
+  // NDC Version header handler
+  const lowercaseVersionHeaderName = VERSION_HEADER_NAME.toLowerCase();
+  const connectorSemVer = new semver.SemVer(VERSION);
+  server.addHook("preHandler", async (request, reply) => {
+    const versionHeader = request.headers[lowercaseVersionHeaderName];
+    if (versionHeader === undefined) {
+      return;
+    }
+
+    if (Array.isArray(versionHeader)) {
+      reply.code(400).send(<ErrorResponse>{
+        message: `Multiple ${VERSION_HEADER_NAME} headers received. Only one is supported.`,
+      })
+      return reply;
+    }
+
+    let wantedSemVer: semver.SemVer;
+    try {
+      wantedSemVer = new semver.SemVer(versionHeader);
+    } catch (e) {
+      reply.code(400).send(<ErrorResponse>{
+        message: `Invalid semver in ${VERSION_HEADER_NAME}s header`,
+        details: e instanceof Error ? { error: e.message } : {}
+      })
+      return reply;
+    }
+
+    const wantedSemVerRange = new semver.Range(`^${wantedSemVer.toString()}`);
+
+    if (!semver.satisfies(connectorSemVer, wantedSemVerRange)) {
+      reply.code(400).send(<ErrorResponse>{
+        message: `The connector does not support the requested NDC version`,
+        details: {
+          connectorVersion: connectorSemVer.toString(),
+          requestedVersionRange: wantedSemVerRange.toString(),
+        }
+      })
       return reply;
     }
   });

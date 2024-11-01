@@ -1,6 +1,6 @@
 {
   "name": "@hasura/ndc-sdk-typescript",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,12 +35,14 @@
     "commander": "^11.0.0",
     "fastify": "^4.23.2",
     "pino-pretty": "^10.2.3",
-    "prom-client": "^15.1.2"
+    "prom-client": "^15.1.2",
+    "semver": "^7.6.3"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.4",
     "@types/node": "^18.11.9",
+    "@types/semver": "^7.5.8",
     "json-schema-to-typescript": "^13.1.1",
-    "typescript": "^5.4.3"
+    "typescript": "^5.6.3"
   }
 }
