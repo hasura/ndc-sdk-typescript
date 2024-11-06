@@ -1,6 +1,6 @@
 # NDC TypeScript SDK Changelog
 
-## [8.0.0] - 2024-11-06
+## Unreleased changes
 **Breaking changes** ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39)):
 - Updated to support [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020). This is a very large update which adds new features and some breaking changes.
 - If the [`X-Hasura-NDC-Version`](https://hasura.github.io/ndc-spec/specification/versioning.html) header is sent, the SDK will validate that the connector supports the incoming request's version and reject it if it does not. If no header is sent, no action is taken.
