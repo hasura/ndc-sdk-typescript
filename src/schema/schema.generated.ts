@@ -16,14 +16,6 @@ export type TypeRepresentation =
       type: "string";
     }
   | {
-      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
-      type: "number";
-    }
-  | {
-      /** @deprecated since NDC Spec v0.1.2 - use sized numeric types instead */ // Manually added :(
-      type: "integer";
-    }
-  | {
       type: "int8";
     }
   | {
@@ -76,6 +68,37 @@ export type TypeRepresentation =
       one_of: string[];
     };
 /**
+ * The definition of an aggregation function on a scalar type
+ */
+export type AggregateFunctionDefinition =
+  | {
+      type: "min";
+    }
+  | {
+      type: "max";
+    }
+  | {
+      type: "sum";
+      /**
+       * The scalar type of the result of this function, which should have one of the type representations Int64 or Float64, depending on whether this function is defined on a scalar type with an integer or floating-point representation, respectively.
+       */
+      result_type: string;
+    }
+  | {
+      type: "average";
+      /**
+       * The scalar type of the result of this function, which should have the type representation Float64
+       */
+      result_type: string;
+    }
+  | {
+      type: "custom";
+      /**
+       * The scalar or object type of the result of this function
+       */
+      result_type: Type;
+    };
+/**
  * Types track the valid representations of values as JSON
  */
 export type Type =
@@ -118,6 +141,18 @@ export type ComparisonOperatorDefinition =
       type: "in";
     }
   | {
+      type: "less_than";
+    }
+  | {
+      type: "less_than_or_equal";
+    }
+  | {
+      type: "greater_than";
+    }
+  | {
+      type: "greater_than_or_equal";
+    }
+  | {
       type: "custom";
       /**
        * The type of the argument to this operator
@@ -131,6 +166,12 @@ export type Aggregate =
        * The column to apply the count aggregate function to
        */
       column: string;
+      /**
+       * Arguments to satisfy the column specified by 'column'
+       */
+      arguments?: {
+        [k: string]: Argument;
+      };
       /**
        * Path to a nested field within an object column
        */
@@ -147,6 +188,12 @@ export type Aggregate =
        */
       column: string;
       /**
+       * Arguments to satisfy the column specified by 'column'
+       */
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
        * Path to a nested field within an object column
        */
       field_path?: string[] | null;
@@ -157,6 +204,15 @@ export type Aggregate =
     }
   | {
       type: "star_count";
+    };
+export type Argument =
+  | {
+      type: "variable";
+      name: string;
+    }
+  | {
+      type: "literal";
+      value: unknown;
     };
 export type Field =
   | {
@@ -184,16 +240,7 @@ export type Field =
         [k: string]: RelationshipArgument;
       };
     };
-export type NestedField = NestedObject | NestedArray;
-export type Argument =
-  | {
-      type: "variable";
-      name: string;
-    }
-  | {
-      type: "literal";
-      value: unknown;
-    };
+export type NestedField = NestedObject | NestedArray | NestedCollection;
 export type RelationshipArgument =
   | {
       type: "variable";
@@ -212,43 +259,34 @@ export type OrderByTarget =
   | {
       type: "column";
       /**
+       * Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported.
+       */
+      path: PathElement[];
+      /**
        * The name of the column
        */
       name: string;
       /**
-       * Path to a nested field within an object column
+       * Arguments to satisfy the column specified by 'name'
+       */
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
+       * Path to a nested field within an object column. Only non-empty if the 'query.nested_fields.order_by' capability is supported.
        */
       field_path?: string[] | null;
-      /**
-       * Any relationships to traverse to reach this column
-       */
-      path: PathElement[];
     }
   | {
-      type: "single_column_aggregate";
-      /**
-       * The column to apply the aggregation function to
-       */
-      column: string;
-      /**
-       * Path to a nested field within an object column
-       */
-      field_path?: string[] | null;
-      /**
-       * Single column aggregate function name.
-       */
-      function: string;
+      type: "aggregate";
       /**
        * Non-empty collection of relationships to traverse
        */
       path: PathElement[];
-    }
-  | {
-      type: "star_count_aggregate";
       /**
-       * Non-empty collection of relationships to traverse
+       * The aggregation method to use
        */
-      path: PathElement[];
+      aggregate: Aggregate;
     };
 export type Expression =
   | {
@@ -275,6 +313,11 @@ export type Expression =
       value: ComparisonValue;
     }
   | {
+      type: "array_comparison";
+      column: ComparisonTarget;
+      comparison: ArrayComparison;
+    }
+  | {
       type: "exists";
       in_collection: ExistsInCollection;
       predicate?: Expression | null;
@@ -287,30 +330,53 @@ export type ComparisonTarget =
        */
       name: string;
       /**
-       * Path to a nested field within an object column
+       * Arguments to satisfy the column specified by 'name'
+       */
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
+       * Path to a nested field within an object column. Only non-empty if the 'query.nested_fields.filter_by' capability is supported.
        */
       field_path?: string[] | null;
-      /**
-       * Any relationships to traverse to reach this column
-       */
-      path: PathElement[];
     }
   | {
-      type: "root_collection_column";
+      type: "aggregate";
       /**
-       * The name of the column
+       * Non-empty collection of relationships to traverse
        */
-      name: string;
+      path: PathElement[];
       /**
-       * Path to a nested field within an object column
+       * The aggregation method to use
        */
-      field_path?: string[] | null;
+      aggregate: Aggregate;
     };
 export type UnaryComparisonOperator = "is_null";
 export type ComparisonValue =
   | {
       type: "column";
-      column: ComparisonTarget;
+      /**
+       * Any relationships to traverse to reach this column. Only non-empty if the 'relationships.relation_comparisons' is supported.
+       */
+      path: PathElement[];
+      /**
+       * The name of the column
+       */
+      name: string;
+      /**
+       * Arguments to satisfy the column specified by 'name'
+       */
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
+       * Path to a nested field within an object column. Only non-empty if the 'query.nested_fields.filter_by' capability is supported.
+       */
+      field_path?: string[] | null;
+      /**
+       * The scope in which this column exists, identified by an top-down index into the stack of scopes. The stack grows inside each `Expression::Exists`, so scope 0 (the default) refers to the current collection, and each subsequent index refers to the collection outside its predecessor's immediately enclosing `Expression::Exists` expression. Only used if the 'query.exists.named_scopes' capability is supported.
+       */
+      scope?: number | null;
     }
   | {
       type: "scalar";
@@ -320,9 +386,24 @@ export type ComparisonValue =
       type: "variable";
       name: string;
     };
+export type ArrayComparison =
+  | {
+      type: "contains";
+      value: ComparisonValue;
+    }
+  | {
+      type: "is_empty";
+    };
 export type ExistsInCollection =
   | {
       type: "related";
+      /**
+       * Path to a nested field within an object column that must be navigated before the relationship is navigated Only non-empty if the 'relationships.nested' capability is supported.
+       */
+      field_path?: string[] | null;
+      /**
+       * The name of the relationship to follow
+       */
       relationship: string;
       /**
        * Values to be provided to any collection arguments
@@ -354,6 +435,90 @@ export type ExistsInCollection =
        * Path to a nested collection via object columns
        */
       field_path?: string[];
+    }
+  | {
+      type: "nested_scalar_collection";
+      column_name: string;
+      arguments?: {
+        [k: string]: Argument;
+      };
+      /**
+       * Path to a nested collection via object columns
+       */
+      field_path?: string[];
+    };
+export type Dimension = {
+  type: "column";
+  /**
+   * Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported.
+   */
+  path: PathElement[];
+  /**
+   * The name of the column
+   */
+  column_name: string;
+  /**
+   * Arguments to satisfy the column specified by 'column_name'
+   */
+  arguments?: {
+    [k: string]: Argument;
+  };
+  /**
+   * Path to a nested field within an object column
+   */
+  field_path?: string[] | null;
+};
+export type GroupExpression =
+  | {
+      type: "and";
+      expressions: GroupExpression[];
+    }
+  | {
+      type: "or";
+      expressions: GroupExpression[];
+    }
+  | {
+      type: "not";
+      expression: GroupExpression;
+    }
+  | {
+      type: "unary_comparison_operator";
+      target: AggregateComparisonTarget;
+      operator: UnaryComparisonOperator;
+    }
+  | {
+      type: "binary_comparison_operator";
+      target: AggregateComparisonTarget;
+      operator: string;
+      value: AggregateComparisonValue;
+    };
+export type AggregateComparisonTarget = {
+  type: "aggregate";
+  aggregate: Aggregate;
+};
+export type AggregateComparisonValue =
+  | {
+      type: "scalar";
+      value: unknown;
+    }
+  | {
+      type: "variable";
+      name: string;
+    };
+export type GroupOrderByTarget =
+  | {
+      type: "dimension";
+      /**
+       * The index of the dimension to order by, selected from the dimensions provided in the `Grouping` request.
+       */
+      index: number;
+    }
+  | {
+      type: "aggregate";
+      /**
+       * Aggregation method to apply
+       */
+      aggregate: Aggregate;
     };
 export type RelationshipType = "object" | "array";
 /**
@@ -409,7 +574,7 @@ export interface QueryCapabilities {
   /**
    * Does the connector support aggregate queries
    */
-  aggregates?: LeafCapability | null;
+  aggregates?: AggregateCapabilities | null;
   /**
    * Does the connector support queries which use variables
    */
@@ -427,15 +592,39 @@ export interface QueryCapabilities {
    */
   exists?: ExistsCapabilities;
 }
+export interface AggregateCapabilities {
+  /**
+   * Does the connector support filtering based on aggregated values
+   */
+  filter_by?: LeafCapability | null;
+  /**
+   * Does the connector support aggregations over groups
+   */
+  group_by?: GroupByCapabilities | null;
+}
 /**
  * A unit value to indicate a particular leaf capability is supported. This is an empty struct to allow for future sub-capabilities.
  */
 export interface LeafCapability {}
+export interface GroupByCapabilities {
+  /**
+   * Does the connector support post-grouping predicates
+   */
+  filter?: LeafCapability | null;
+  /**
+   * Does the connector support post-grouping ordering
+   */
+  order?: LeafCapability | null;
+  /**
+   * Does the connector support post-grouping pagination
+   */
+  paginate?: LeafCapability | null;
+}
 export interface NestedFieldCapabilities {
   /**
    * Does the connector support filtering by values of nested fields
    */
-  filter_by?: LeafCapability | null;
+  filter_by?: NestedFieldFilterByCapabilities | null;
   /**
    * Does the connector support ordering by values of nested fields
    */
@@ -444,12 +633,44 @@ export interface NestedFieldCapabilities {
    * Does the connector support aggregating values within nested fields
    */
   aggregates?: LeafCapability | null;
+  /**
+   * Does the connector support nested collection queries using `NestedField::NestedCollection`
+   */
+  nested_collections?: LeafCapability | null;
+}
+export interface NestedFieldFilterByCapabilities {
+  /**
+   * Does the connector support filtering over nested arrays (ie. Expression::ArrayComparison)
+   */
+  nested_arrays?: NestedArrayFilterByCapabilities | null;
+}
+export interface NestedArrayFilterByCapabilities {
+  /**
+   * Does the connector support filtering over nested arrays by checking if the array contains a value. This must be supported for all types that can be contained in an array that implement an 'eq' comparison operator.
+   */
+  contains?: LeafCapability | null;
+  /**
+   * Does the connector support filtering over nested arrays by checking if the array is empty. This must be supported no matter what type is contained in the array.
+   */
+  is_empty?: LeafCapability | null;
 }
 export interface ExistsCapabilities {
+  /**
+   * Does the connector support named scopes in column references inside EXISTS predicates
+   */
+  named_scopes?: LeafCapability | null;
+  /**
+   * Does the connector support ExistsInCollection::Unrelated
+   */
+  unrelated?: LeafCapability | null;
   /**
    * Does the connector support ExistsInCollection::NestedCollection
    */
   nested_collections?: LeafCapability | null;
+  /**
+   * Does the connector support filtering over nested scalar arrays using existential quantification. This means the connector must support ExistsInCollection::NestedScalarCollection.
+   */
+  nested_scalar_collections?: LeafCapability | null;
 }
 export interface MutationCapabilities {
   /**
@@ -470,6 +691,16 @@ export interface RelationshipCapabilities {
    * Does the connector support ordering by an aggregated array relationship?
    */
   order_by_aggregate?: LeafCapability | null;
+  /**
+   * Does the connector support navigating a relationship from inside a nested object
+   */
+  nested?: NestedRelationshipCapabilities | null;
+}
+export interface NestedRelationshipCapabilities {
+  /**
+   * Does the connector support navigating a relationship from inside a nested object inside a nested array
+   */
+  array?: LeafCapability | null;
 }
 export interface SchemaResponse {
   /**
@@ -496,15 +727,19 @@ export interface SchemaResponse {
    * Procedures which are available for execution as part of mutations
    */
   procedures: ProcedureInfo[];
+  /**
+   * Schema data which is relevant to features enabled by capabilities
+   */
+  capabilities?: CapabilitySchemaInfo | null;
 }
 /**
  * The definition of a scalar type, i.e. types that can be used as the types of columns.
  */
 export interface ScalarType {
   /**
-   * A description of valid values for this scalar type. Defaults to `TypeRepresentation::JSON` if omitted
+   * A description of valid values for this scalar type.
    */
-  representation?: TypeRepresentation | null;
+  representation: TypeRepresentation;
   /**
    * A map from aggregate function names to their definitions. Result type names must be defined scalar types declared in ScalarTypesCapabilities.
    */
@@ -519,15 +754,6 @@ export interface ScalarType {
   };
 }
 /**
- * The definition of an aggregation function on a scalar type
- */
-export interface AggregateFunctionDefinition {
-  /**
-   * The scalar or object type of the result of this function
-   */
-  result_type: Type;
-}
-/**
  * The definition of an object type
  */
 export interface ObjectType {
@@ -540,6 +766,12 @@ export interface ObjectType {
    */
   fields: {
     [k: string]: ObjectField;
+  };
+  /**
+   * Any foreign keys defined for this object type's columns
+   */
+  foreign_keys: {
+    [k: string]: ForeignKeyConstraint;
   };
 }
 /**
@@ -571,6 +803,18 @@ export interface ArgumentInfo {
    */
   type: Type;
 }
+export interface ForeignKeyConstraint {
+  /**
+   * The columns on which you want want to define the foreign key. This is a mapping between fields on object type to columns on the foreign collection. The column on the foreign collection is specified via a field path (ie. an array of field names that descend through nested object fields). The field path must only contain a single item, meaning a column on the foreign collection's type, unless the 'relationships.nested' capability is supported, in which case multiple items can be used to denote a nested object field.
+   */
+  column_mapping: {
+    [k: string]: string[];
+  };
+  /**
+   * The name of a collection
+   */
+  foreign_collection: string;
+}
 export interface CollectionInfo {
   /**
    * The name of the collection
@@ -598,30 +842,12 @@ export interface CollectionInfo {
   uniqueness_constraints: {
     [k: string]: UniquenessConstraint;
   };
-  /**
-   * Any foreign key constraints enforced on this collection
-   */
-  foreign_keys: {
-    [k: string]: ForeignKeyConstraint;
-  };
 }
 export interface UniquenessConstraint {
   /**
    * A list of columns which this constraint requires to be unique
    */
   unique_columns: string[];
-}
-export interface ForeignKeyConstraint {
-  /**
-   * The columns on which you want want to define the foreign key.
-   */
-  column_mapping: {
-    [k: string]: string;
-  };
-  /**
-   * The name of a collection
-   */
-  foreign_collection: string;
 }
 export interface FunctionInfo {
   /**
@@ -663,6 +889,30 @@ export interface ProcedureInfo {
    */
   result_type: Type;
 }
+export interface CapabilitySchemaInfo {
+  /**
+   * Schema information relevant to query capabilities
+   */
+  query?: QueryCapabilitiesSchemaInfo | null;
+}
+export interface QueryCapabilitiesSchemaInfo {
+  /**
+   * Schema information relevant to aggregate query capabilities
+   */
+  aggregates?: AggregateCapabilitiesSchemaInfo | null;
+}
+export interface AggregateCapabilitiesSchemaInfo {
+  /**
+   * Schema information relevant to the aggregates.filter_by capability
+   */
+  filter_by?: AggregateFilterByCapabilitiesSchemaInfo | null;
+}
+export interface AggregateFilterByCapabilitiesSchemaInfo {
+  /**
+   * The scalar type which should be used for the return type of count (star_count and column_count) operations.
+   */
+  count_scalar_type: string;
+}
 /**
  * This is the request body of the query POST endpoint
  */
@@ -682,13 +932,13 @@ export interface QueryRequest {
     [k: string]: Argument;
   };
   /**
-   * Any relationships between collections involved in the query request
+   * Any relationships between collections involved in the query request. Only used if the 'relationships' capability is supported.
    */
   collection_relationships: {
     [k: string]: Relationship;
   };
   /**
-   * One set of named variables for each rowset to fetch. Each variable set should be subtituted in turn, and a fresh set of rows returned.
+   * One set of named variables for each rowset to fetch. Each variable set should be subtituted in turn, and a fresh set of rows returned. Only used if the 'query.variables' capability is supported.
    */
   variables?:
     | {
@@ -698,7 +948,7 @@ export interface QueryRequest {
 }
 export interface Query {
   /**
-   * Aggregate fields of the query
+   * Aggregate fields of the query. Only used if the 'query.aggregates' capability is supported.
    */
   aggregates?: {
     [k: string]: Aggregate;
@@ -717,8 +967,18 @@ export interface Query {
    * Optionally offset from the Nth result
    */
   offset?: number | null;
+  /**
+   * Optionally specify how rows should be ordered
+   */
   order_by?: OrderBy | null;
+  /**
+   * Optionally specify a predicate to apply to the rows
+   */
   predicate?: Expression | null;
+  /**
+   * Optionally group and aggregate the selected rows. Only used if the 'query.aggregates.group_by' capability is supported.
+   */
+  groups?: Grouping | null;
 }
 export interface NestedObject {
   type: "object";
@@ -729,6 +989,13 @@ export interface NestedObject {
 export interface NestedArray {
   type: "array";
   fields: NestedField;
+}
+/**
+ * Perform a query over the nested array's rows. Only used if the 'query.nested_fields.nested_collections' capability is supported.
+ */
+export interface NestedCollection {
+  type: "collection";
+  query: Query;
 }
 export interface OrderBy {
   /**
@@ -741,6 +1008,10 @@ export interface OrderByElement {
   target: OrderByTarget;
 }
 export interface PathElement {
+  /**
+   * Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested' capability is supported.
+   */
+  field_path?: string[] | null;
   /**
    * The name of the relationship to follow
    */
@@ -756,12 +1027,50 @@ export interface PathElement {
    */
   predicate?: Expression | null;
 }
+export interface Grouping {
+  /**
+   * Dimensions along which to partition the data
+   */
+  dimensions: Dimension[];
+  /**
+   * Aggregates to compute in each group
+   */
+  aggregates: {
+    [k: string]: Aggregate;
+  };
+  /**
+   * Optionally specify a predicate to apply after grouping rows. Only used if the 'query.aggregates.group_by.filter' capability is supported.
+   */
+  predicate?: GroupExpression | null;
+  /**
+   * Optionally specify how groups should be ordered Only used if the 'query.aggregates.group_by.order' capability is supported.
+   */
+  order_by?: GroupOrderBy | null;
+  /**
+   * Optionally limit to N groups Only used if the 'query.aggregates.group_by.paginate' capability is supported.
+   */
+  limit?: number | null;
+  /**
+   * Optionally offset from the Nth group Only used if the 'query.aggregates.group_by.paginate' capability is supported.
+   */
+  offset?: number | null;
+}
+export interface GroupOrderBy {
+  /**
+   * The elements to order by, in priority order
+   */
+  elements: GroupOrderByElement[];
+}
+export interface GroupOrderByElement {
+  order_direction: OrderDirection;
+  target: GroupOrderByTarget;
+}
 export interface Relationship {
   /**
-   * A mapping between columns on the source collection to columns on the target collection
+   * A mapping between columns on the source row to columns on the target collection. The column on the target collection is specified via a field path (ie. an array of field names that descend through nested object fields). The field path will only contain a single item, meaning a column on the target collection's type, unless the 'relationships.nested' capability is supported, in which case multiple items denotes a nested object field.
    */
   column_mapping: {
-    [k: string]: string;
+    [k: string]: string[];
   };
   relationship_type: RelationshipType;
   /**
@@ -790,15 +1099,31 @@ export interface RowSet {
         [k: string]: RowFieldValue;
       }[]
     | null;
+  /**
+   * The results of any grouping operation
+   */
+  groups?: Group[] | null;
 }
 export type RowFieldValue = unknown; // Manually corrected :(
+export interface Group {
+  /**
+   * Values of dimensions which identify this group
+   */
+  dimensions: unknown[];
+  /**
+   * Aggregates computed within this group
+   */
+  aggregates: {
+    [k: string]: unknown;
+  };
+}
 export interface MutationRequest {
   /**
    * The mutation operations to perform
    */
   operations: MutationOperation[];
   /**
-   * The relationships between collections involved in the entire mutation request
+   * The relationships between collections involved in the entire mutation request. Only used if the 'relationships' capability is supported.
    */
   collection_relationships: {
     [k: string]: Relationship;

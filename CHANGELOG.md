@@ -1,5 +1,10 @@
 # NDC TypeScript SDK Changelog
 
+## Unreleased changes
+**Breaking changes** ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39)):
+- Updated to support [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020). This is a very large update which adds new features and some breaking changes.
+- If the [`X-Hasura-NDC-Version`](https://hasura.github.io/ndc-spec/specification/versioning.html) header is sent, the SDK will validate that the connector supports the incoming request's version and reject it if it does not. If no header is sent, no action is taken.
+
 ## [7.0.0] - 2024-09-20
 - Added support for exporting OpenTelemetry traces and metrics over GRPC. A new environment variable `OTEL_EXPORTER_OTLP_PROTOCOL` lets you switch between `http/protobuf` and `grpc`.
   - **Breaking change**: the default OpenTelemetry exporter has changed from `http/protobuf` sending to `http://localhost:4318` to `grpc` sending to `http://localhost:4317`. To return to the old defaults, set the following environment variables:
