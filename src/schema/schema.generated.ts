@@ -153,6 +153,24 @@ export type ComparisonOperatorDefinition =
       type: "greater_than_or_equal";
     }
   | {
+      type: "contains";
+    }
+  | {
+      type: "contains_insensitive";
+    }
+  | {
+      type: "starts_with";
+    }
+  | {
+      type: "starts_with_insensitive";
+    }
+  | {
+      type: "ends_with";
+    }
+  | {
+      type: "ends_with_insensitive";
+    }
+  | {
       type: "custom";
       /**
        * The type of the argument to this operator
@@ -902,12 +920,6 @@ export interface QueryCapabilitiesSchemaInfo {
   aggregates?: AggregateCapabilitiesSchemaInfo | null;
 }
 export interface AggregateCapabilitiesSchemaInfo {
-  /**
-   * Schema information relevant to the aggregates.filter_by capability
-   */
-  filter_by?: AggregateFilterByCapabilitiesSchemaInfo | null;
-}
-export interface AggregateFilterByCapabilitiesSchemaInfo {
   /**
    * The scalar type which should be used for the return type of count (star_count and column_count) operations.
    */
