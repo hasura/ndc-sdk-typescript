@@ -2,6 +2,9 @@
 
 ## Unreleased changes
 
+## [8.0.0-rc.1] - 2025-01-30
+- Updated to support the latest release candidate (rc.3) of [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020)
+
 ## [8.0.0-rc.0] - 2025-01-08
 **Breaking changes** ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39), [#40](https://github.com/hasura/ndc-sdk-typescript/pull/40)):
 - Updated to support [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020). This is a very large update which adds new features and some breaking changes.

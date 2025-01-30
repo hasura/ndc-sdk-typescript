@@ -177,6 +177,101 @@ export type ComparisonOperatorDefinition =
        */
       argument_type: Type;
     };
+/**
+ * The definition of an aggregation function on a scalar type
+ */
+export type ExtractionFunctionDefinition =
+  | {
+      type: "nanosecond";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "microsecond";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "second";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "minute";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "hour";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "day";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "week";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "month";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "quarter";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "year";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "day_of_week";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "day_of_year";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
+      type: "custom";
+      /**
+       * The scalar or object type of the result of this function
+       */
+      result_type: Type;
+    };
 export type Aggregate =
   | {
       type: "column_count";
@@ -485,6 +580,10 @@ export type Dimension = {
    * Path to a nested field within an object column
    */
   field_path?: string[] | null;
+  /**
+   * The name of the extraction function to apply to the selected value, if any
+   */
+  extraction?: string | null;
 };
 export type GroupExpression =
   | {
@@ -769,6 +868,12 @@ export interface ScalarType {
    */
   comparison_operators: {
     [k: string]: ComparisonOperatorDefinition;
+  };
+  /**
+   * A map from extraction function names to their definitions.
+   */
+  extraction_functions?: {
+    [k: string]: ExtractionFunctionDefinition;
   };
 }
 /**
