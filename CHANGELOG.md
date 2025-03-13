@@ -2,8 +2,13 @@
 
 ## Unreleased changes
 
+## [8.0.0] - 2025-03-13
+**Breaking changes** since v7.0.0 ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39), [#40](https://github.com/hasura/ndc-sdk-typescript/pull/40), [#42](https://github.com/hasura/ndc-sdk-typescript/pull/42), [#43](https://github.com/hasura/ndc-sdk-typescript/pull/43)):
+- Updated to support [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020). This is a very large update which adds new features and some breaking changes.
+- If the [`X-Hasura-NDC-Version`](https://hasura.github.io/ndc-spec/specification/versioning.html) header is sent, the SDK will validate that the connector supports the incoming request's version and reject it if it does not. If no header is sent, no action is taken.
+
 ## [8.0.0-rc.1] - 2025-01-30
-- Updated to support the latest release candidate (rc.3) of [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020)
+- Updated to support the latest release candidate (rc.3) of [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020) ([#42](https://github.com/hasura/ndc-sdk-typescript/pull/42))
 
 ## [8.0.0-rc.0] - 2025-01-08
 **Breaking changes** ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39), [#40](https://github.com/hasura/ndc-sdk-typescript/pull/40)):

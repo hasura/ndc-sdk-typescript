@@ -372,7 +372,7 @@ export type OrderByTarget =
   | {
       type: "column";
       /**
-       * Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported.
+       * Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported. 'PathElement.field_path' will only be non-empty if the 'relationships.nested.ordering' capability is supported.
        */
       path: PathElement[];
       /**
@@ -393,7 +393,7 @@ export type OrderByTarget =
   | {
       type: "aggregate";
       /**
-       * Non-empty collection of relationships to traverse
+       * Non-empty collection of relationships to traverse. Only non-empty if the 'relationships' capability is supported. 'PathElement.field_path' will only be non-empty if the 'relationships.nested.ordering' capability is supported.
        */
       path: PathElement[];
       /**
@@ -511,7 +511,7 @@ export type ExistsInCollection =
   | {
       type: "related";
       /**
-       * Path to a nested field within an object column that must be navigated before the relationship is navigated Only non-empty if the 'relationships.nested' capability is supported.
+       * Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested.filtering' capability is supported.
        */
       field_path?: string[] | null;
       /**
@@ -818,6 +818,14 @@ export interface NestedRelationshipCapabilities {
    * Does the connector support navigating a relationship from inside a nested object inside a nested array
    */
   array?: LeafCapability | null;
+  /**
+   * Does the connector support filtering over a relationship that starts from inside a nested object
+   */
+  filtering?: LeafCapability | null;
+  /**
+   * Does the connector support ordering over a relationship that starts from inside a nested object
+   */
+  ordering?: LeafCapability | null;
 }
 export interface SchemaResponse {
   /**
@@ -1126,7 +1134,7 @@ export interface OrderByElement {
 }
 export interface PathElement {
   /**
-   * Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested' capability is supported.
+   * Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested' capability is supported (plus perhaps one of the sub-capabilities, depending on the feature using the PathElement).
    */
   field_path?: string[] | null;
   /**

@@ -440,6 +440,28 @@
               "type": "null"
             }
           ]
+        },
+        "filtering": {
+          "description": "Does the connector support filtering over a relationship that starts from inside a nested object",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ordering": {
+          "description": "Does the connector support ordering over a relationship that starts from inside a nested object",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/LeafCapability"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -2301,7 +2323,7 @@
               ]
             },
             "path": {
-              "description": "Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported.",
+              "description": "Any (object) relationships to traverse to reach this column. Only non-empty if the 'relationships' capability is supported. 'PathElement.field_path' will only be non-empty if the 'relationships.nested.ordering' capability is supported.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/PathElement"
@@ -2346,7 +2368,7 @@
               ]
             },
             "path": {
-              "description": "Non-empty collection of relationships to traverse",
+              "description": "Non-empty collection of relationships to traverse. Only non-empty if the 'relationships' capability is supported. 'PathElement.field_path' will only be non-empty if the 'relationships.nested.ordering' capability is supported.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/PathElement"
@@ -2373,7 +2395,7 @@
       ],
       "properties": {
         "field_path": {
-          "description": "Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested' capability is supported.",
+          "description": "Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested' capability is supported (plus perhaps one of the sub-capabilities, depending on the feature using the PathElement).",
           "type": [
             "array",
             "null"
@@ -2804,7 +2826,7 @@
               ]
             },
             "field_path": {
-              "description": "Path to a nested field within an object column that must be navigated before the relationship is navigated Only non-empty if the 'relationships.nested' capability is supported.",
+              "description": "Path to a nested field within an object column that must be navigated before the relationship is navigated. Only non-empty if the 'relationships.nested.filtering' capability is supported.",
               "type": [
                 "array",
                 "null"
