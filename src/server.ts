@@ -83,6 +83,7 @@ export async function startServer<Configuration, State>(
 
   const server = Fastify({
     logger: configureFastifyLogging(options),
+    bodyLimit: 1048576 * 30, // 30mb body limit
     ajv: {
       customOptions: customAjvOptions,
     },
@@ -293,7 +294,7 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.setErrorHandler(function (error, _request, reply) {
+  server.setErrorHandler(function(error, _request, reply) {
     // pino trace instrumentation will add trace information to log output
     this.log.error(error);
 
