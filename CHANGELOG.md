@@ -2,6 +2,10 @@
 
 ## Unreleased changes
 
+## [8.1.0] - 2025-05-12
+
+- Increased `bodyLimit` from 1mb to 30mb
+
 ## [8.0.0] - 2025-03-13
 **Breaking changes** since v7.0.0 ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39), [#40](https://github.com/hasura/ndc-sdk-typescript/pull/40), [#42](https://github.com/hasura/ndc-sdk-typescript/pull/42), [#43](https://github.com/hasura/ndc-sdk-typescript/pull/43)):
 - Updated to support [v0.2.0 of the NDC Spec](https://hasura.github.io/ndc-spec/specification/changelog.html#020). This is a very large update which adds new features and some breaking changes.
