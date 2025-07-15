@@ -11,6 +11,7 @@ import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { Attributes, Span, SpanStatusCode, Tracer } from "@opentelemetry/api";
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from "@opentelemetry/core";
 import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3"
+import { LIB_VERSION } from './version'
 
 let sdk: opentelemetry.NodeSDK | null = null;
 
@@ -29,6 +30,9 @@ export function initTelemetry(
   const endpoint =
     process.env["OTEL_EXPORTER_OTLP_ENDPOINT"] || defaultEndpoint;
   const protocol = process.env["OTEL_EXPORTER_OTLP_PROTOCOL"] || defaultProtocol;
+
+  const connectorName = process.env["HASURA_CONNECTOR_NAME"] || "unknown-connector";
+  const connectorVersion = process.env["HASURA_CONNECTOR_VERSION"] || "unknown-version";
 
   let exporters = getExporters(protocol, endpoint);
 
@@ -58,6 +62,9 @@ export function initTelemetry(
       new PinoInstrumentation({
         logHook: (span, record, level) => {
           record["resource.service.name"] = serviceName;
+          record["resource.service.version"] = LIB_VERSION;
+          record["resource.service.connector.name"] = connectorName;
+          record["resource.service.connector.version"] = connectorVersion;
           // This logs the parent span ID in the pino logs, useful for debugging propagation.
           // parentSpanId is an internal property, hence the cast to any, because I can't
           // seem to find a way to get at it through a supported API 😭
