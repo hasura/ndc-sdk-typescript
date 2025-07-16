@@ -4,3 +4,7 @@ typegen
 Cargo.lock
 Cargo.toml
 example
+.github
+rust-toolchain.toml
+.editorconfig
+.nvmrc

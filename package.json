@@ -9,7 +9,6 @@
     "./instrumentation": "./dist/instrumentation.js"
   },
   "scripts": {
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "regenerate-schema": "./typegen/regenerate-schema.sh",
     "build": "tsc"

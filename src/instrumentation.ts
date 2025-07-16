@@ -11,7 +11,8 @@ import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { Attributes, Span, SpanStatusCode, Tracer } from "@opentelemetry/api";
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from "@opentelemetry/core";
 import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3"
-import { LIB_VERSION } from './version'
+import { ReadableSpan, SpanProcessor, BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
+import { version as packageVersion } from "../package.json"
 
 let sdk: opentelemetry.NodeSDK | null = null;
 
@@ -38,7 +39,6 @@ export function initTelemetry(
 
   sdk = new opentelemetry.NodeSDK({
     serviceName,
-    traceExporter: exporters.traceExporter,
     metricReader: new PeriodicExportingMetricReader({
       exporter: exporters.metricsExporter,
     }),
@@ -61,10 +61,6 @@ export function initTelemetry(
       // the pino instrumentation adds trace information to pino logs
       new PinoInstrumentation({
         logHook: (span, record, level) => {
-          record["resource.service.name"] = serviceName;
-          record["resource.service.version"] = LIB_VERSION;
-          record["resource.service.connector.name"] = connectorName;
-          record["resource.service.connector.version"] = connectorVersion;
           // This logs the parent span ID in the pino logs, useful for debugging propagation.
           // parentSpanId is an internal property, hence the cast to any, because I can't
           // seem to find a way to get at it through a supported API 😭
@@ -80,6 +76,15 @@ export function initTelemetry(
         new B3Propagator({ injectEncoding: B3InjectEncoding.MULTI_HEADER }),
       ]
     }),
+    spanProcessors: [
+      new CustomAttributesSpanProcessor({
+        "resource.service.name": serviceName,
+        "resource.service.version": packageVersion,
+        "resource.service.connector.name": connectorName,
+        "resource.service.connector.version": connectorVersion,
+      }),
+      new BatchSpanProcessor(exporters.traceExporter),
+    ]
   });
 
   process.on("beforeExit", async () => {
@@ -184,4 +189,27 @@ export function withInternalActiveSpan<TReturn>(
       throw e;
     }
   });
+}
+
+class CustomAttributesSpanProcessor implements SpanProcessor {
+  private readonly attributes: Attributes;
+
+  constructor(attributes: Attributes) {
+    this.attributes = attributes;
+  }
+
+  forceFlush(): Promise<void> {
+    return Promise.resolve();
+  }
+
+  onStart(span: Span): void {
+    span.setAttributes(this.attributes);
+  }
+
+  onEnd(_span: ReadableSpan): void {
+  }
+
+  shutdown(): Promise<void> {
+    return Promise.resolve();
+  }
 }
