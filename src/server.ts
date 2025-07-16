@@ -1,4 +1,5 @@
 import Fastify, { FastifyRequest } from "fastify";
+import compress from "@fastify/compress";
 import opentelemetry, {
   SpanStatusCode,
 } from "@opentelemetry/api";
@@ -101,6 +102,13 @@ export async function startServer<Configuration, State>(
     ajv: {
       customOptions: customAjvOptions,
     },
+  });
+
+  // Register compression plugin
+  await server.register(compress, {
+    global: true,
+    // TODO add zstd when we upgrade to Node.js 22.15+/23.8+
+    encodings: ['gzip', 'deflate'],
   });
 
   // temporary: use JSON.stringify instead of https://github.com/fastify/fast-json-stringify

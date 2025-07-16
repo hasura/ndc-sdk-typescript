@@ -20,10 +20,11 @@
   "author": "Hasura",
   "license": "Apache-2.0",
   "dependencies": {
+    "@fastify/compress": "^7.0.3",
     "@json-schema-tools/meta-schema": "^1.7.0",
     "@opentelemetry/api": "^1.8.0",
-    "@opentelemetry/exporter-metrics-otlp-proto": "^0.53.0",
     "@opentelemetry/exporter-metrics-otlp-grpc": "^0.53.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.53.0",
     "@opentelemetry/instrumentation-fastify": "^0.36.0",
     "@opentelemetry/instrumentation-fetch": "^0.53.0",
     "@opentelemetry/instrumentation-http": "^0.53.0",
