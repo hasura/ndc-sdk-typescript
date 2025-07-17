@@ -22,6 +22,8 @@ export function initTelemetry(
   defaultServiceName: string = "hasura-ndc",
   defaultEndpoint: string = "http://localhost:4317",
   defaultProtocol: Protocol = "grpc",
+  defaultConnectorName: string = "unknown-typescript-sdk-connector",
+  defaultConnectorVersion: string = "unknown-version",
 ) {
   if (isInitialized()) {
     throw new Error("Telemetry has already been initialized!");
@@ -32,8 +34,8 @@ export function initTelemetry(
     process.env["OTEL_EXPORTER_OTLP_ENDPOINT"] || defaultEndpoint;
   const protocol = process.env["OTEL_EXPORTER_OTLP_PROTOCOL"] || defaultProtocol;
 
-  const connectorName = process.env["HASURA_CONNECTOR_NAME"] || "unknown-connector";
-  const connectorVersion = process.env["HASURA_CONNECTOR_VERSION"] || "unknown-version";
+  const connectorName = process.env["HASURA_CONNECTOR_NAME"] || defaultConnectorName;
+  const connectorVersion = process.env["HASURA_CONNECTOR_VERSION"] || defaultConnectorVersion;
 
   let exporters = getExporters(protocol, endpoint);
 
