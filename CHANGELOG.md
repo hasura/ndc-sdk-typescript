@@ -2,9 +2,12 @@
 
 ## Unreleased changes
 
-## [8.1.0] - 2025-05-12
+## [8.2.0] - 2025-07-18
+- Added support for automatically returning compressed responses using gzip or deflate ([#47](https://github.com/hasura/ndc-sdk-typescript/pull/47))
+- All OpenTelemetry trace spans are now annotated with the SDK version (`resource.service.version`) and the connector name (`resource.service.connector.name`) and version (`resource.service.connector.version`). The connector name and version can be passed to `initTelemetry` or set at runtime using `HASURA_CONNECTOR_NAME` and `HASURA_CONNECTOR_VERSION` environment variables. ([#48](https://github.com/hasura/ndc-sdk-typescript/pull/48))
 
-- Increased `bodyLimit` from 1mb to 30mb
+## [8.1.0] - 2025-05-12
+- Increased `bodyLimit` from 1mb to 30mb ([#44](https://github.com/hasura/ndc-sdk-typescript/pull/44))
 
 ## [8.0.0] - 2025-03-13
 **Breaking changes** since v7.0.0 ([#39](https://github.com/hasura/ndc-sdk-typescript/pull/39), [#40](https://github.com/hasura/ndc-sdk-typescript/pull/40), [#42](https://github.com/hasura/ndc-sdk-typescript/pull/42), [#43](https://github.com/hasura/ndc-sdk-typescript/pull/43)):
