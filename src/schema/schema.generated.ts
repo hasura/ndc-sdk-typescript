@@ -1763,6 +1763,7 @@ export interface RelationalAggregateExpressionCapabilities {
   median?: LeafCapability | null;
   min?: LeafCapability | null;
   string_agg?: RelationalOrderedAggregateFunctionCapabilities | null;
+  string_agg_with_separator?: RelationalOrderedAggregateFunctionCapabilities | null;
   sum?: LeafCapability | null;
   var?: LeafCapability | null;
   stddev?: LeafCapability | null;
