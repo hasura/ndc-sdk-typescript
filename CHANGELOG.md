@@ -1,6 +1,7 @@
 # NDC TypeScript SDK Changelog
 
 ## Unreleased changes
+- Logging of requests and responses has been improved to include the function name if available ([#51](https://github.com/hasura/ndc-sdk-typescript/pull/51))
 
 ## [8.2.0] - 2025-07-18
 - Added support for automatically returning compressed responses using gzip or deflate ([#47](https://github.com/hasura/ndc-sdk-typescript/pull/47))
