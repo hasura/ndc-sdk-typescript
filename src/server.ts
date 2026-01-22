@@ -1,4 +1,4 @@
-import Fastify, { FastifyRequest } from "fastify";
+import Fastify, { FastifyReply, FastifyRequest } from "fastify";
 import compress from "@fastify/compress";
 import opentelemetry, {
   SpanStatusCode,
@@ -83,6 +83,23 @@ export interface ServerOptions {
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
 
+// PreHandler hook to bind function name to request logger and log incoming request for /query and /mutation routes
+const bindFunctionToLogger = (collectionKey: 'collection' | 'operations') => {
+  return (request: FastifyRequest, _reply: FastifyReply, done: () => void) => {
+    let functionName: string | undefined;
+    if (collectionKey === 'collection') {
+      functionName = (request.body as any)?.collection;
+    } else {
+      functionName = (request.body as any)?.operations?.[0]?.name;
+    }
+    if (functionName) {
+      request.log = request.log.child({ function: functionName });
+    }
+    request.log.info({ req: request }, "incoming request");
+    done();
+  };
+};
+
 export async function startServer<Configuration, State>(
   connector: Connector<Configuration, State>,
   options: ServerOptions
@@ -98,6 +115,7 @@ export async function startServer<Configuration, State>(
 
   const server = Fastify({
     logger: configureFastifyLogging(options),
+    disableRequestLogging: true, // We handle request logging manually to include function name
     bodyLimit: 1048576 * 30, // 30mb body limit
     ajv: {
       customOptions: customAjvOptions,
@@ -118,6 +136,23 @@ export async function startServer<Configuration, State>(
       return (data) => JSON.stringify(data);
     }
   );
+
+  // Log incoming request for routes that don't have function name binding
+  // (routes with function binding log in their preHandler instead)
+  server.addHook("onRequest", async (request, _reply) => {
+    const url = request.routeOptions.url;
+    if (url !== "/query" && url !== "/mutation") {
+      request.log.info({ req: request }, "incoming request");
+    }
+  });
+
+  // Log request completed for all routes
+  server.addHook("onResponse", async (request, reply) => {
+    request.log.info(
+      { req: request, res: reply, responseTime: reply.elapsedTime },
+      "request completed"
+    );
+  });
 
   // Authorization handler
   server.addHook("preHandler", async (request, reply) => {
@@ -238,9 +273,10 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.post(
+  server.post<{ Body: QueryRequest }>(
     "/query",
     {
+      preHandler: bindFunctionToLogger('collection'),
       schema: {
         body: QueryRequestSchema,
         response: {
@@ -249,11 +285,7 @@ export async function startServer<Configuration, State>(
         },
       },
     },
-    async (
-      request: FastifyRequest<{
-        Body: QueryRequest;
-      }>
-    ) => {
+    async (request) => {
       request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Query Request");
 
       const queryResponse = await withActiveSpan(
@@ -295,9 +327,10 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.post(
+  server.post<{ Body: MutationRequest }>(
     "/mutation",
     {
+      preHandler: bindFunctionToLogger('operations'),
       schema: {
         body: MutationRequestSchema,
         response: {
@@ -306,11 +339,7 @@ export async function startServer<Configuration, State>(
         },
       },
     },
-    async (
-      request: FastifyRequest<{
-        Body: MutationRequest;
-      }>
-    ): Promise<MutationResponse> => {
+    async (request): Promise<MutationResponse> => {
       request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Mutation Request");
 
       const mutationResponse = await withActiveSpan(
