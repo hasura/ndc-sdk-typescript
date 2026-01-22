@@ -92,27 +92,29 @@ const safeRequestFields = (request: FastifyRequest) => ({
 // PreHandler hooks to bind function name to request logger and log incoming request
 const bindQueryFunctionToLogger = (
   request: FastifyRequest<{ Body: QueryRequest }>,
-  _reply: FastifyReply,
+  reply: FastifyReply,
   done: () => void
 ) => {
   const functionName = request.body.collection;
   if (functionName) {
     request.log = request.log.child({ function: functionName });
+    reply.log  = reply.log.child({ function: functionName });
   }
-  request.log.info({ req: safeRequestFields(request) }, "incoming request");
+  request.log.info({ req: safeRequestFields(request) }, "incoming function request");
   done();
 };
 
 const bindMutationFunctionToLogger = (
   request: FastifyRequest<{ Body: MutationRequest }>,
-  _reply: FastifyReply,
+  reply: FastifyReply,
   done: () => void
 ) => {
   const functionName = request.body.operations?.[0]?.name;
   if (functionName) {
     request.log = request.log.child({ function: functionName });
+    reply.log  = reply.log.child({ function: functionName });
   }
-  request.log.info({ req: safeRequestFields(request) }, "incoming request");
+  request.log.info({ req: safeRequestFields(request) }, "incoming procedure request");
   done();
 };
 
@@ -131,7 +133,6 @@ export async function startServer<Configuration, State>(
 
   const server = Fastify({
     logger: configureFastifyLogging(options),
-    disableRequestLogging: true, // We handle request logging manually to include function name
     bodyLimit: 1048576 * 30, // 30mb body limit
     ajv: {
       customOptions: customAjvOptions,
@@ -152,27 +153,6 @@ export async function startServer<Configuration, State>(
       return (data) => JSON.stringify(data);
     }
   );
-
-  // Log incoming request for routes that don't have function name binding
-  // (routes with function binding log in their preHandler instead)
-  server.addHook("onRequest", async (request, _reply) => {
-    const url = request.routeOptions.url;
-    if (url !== "/query" && url !== "/mutation") {
-      request.log.info({ req: safeRequestFields(request) }, "incoming request");
-    }
-  });
-
-  // Log request completed for all routes
-  server.addHook("onResponse", async (request, reply) => {
-    request.log.info(
-      {
-        req: safeRequestFields(request),
-        res: { statusCode: reply.statusCode },
-        responseTime: reply.elapsedTime,
-      },
-      "request completed"
-    );
-  });
 
   // Authorization handler
   server.addHook("preHandler", async (request, reply) => {
