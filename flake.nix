@@ -1,5 +1,5 @@
 {
-  description = "v3-console development dependencies";
+  description = "ndc-sdk-typescript development dependencies";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
