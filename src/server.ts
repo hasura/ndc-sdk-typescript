@@ -89,32 +89,33 @@ const safeRequestFields = (request: FastifyRequest) => ({
   url: request.url,
 });
 
-// PreHandler hooks to bind function name to request logger and log incoming request
+// PreHandler hook to bind ndc collection name to request logger and log incoming request
 const bindQueryFunctionToLogger = (
   request: FastifyRequest<{ Body: QueryRequest }>,
   reply: FastifyReply,
   done: () => void
 ) => {
-  const functionName = request.body.collection;
-  if (functionName) {
-    request.log = request.log.child({ function: functionName });
-    reply.log  = reply.log.child({ function: functionName });
+  const collectionName = request.body.collection;
+  if (collectionName) {
+    request.log = request.log.child({ "ndc-collection": collectionName });
+    reply.log  = reply.log.child({ "ndc-collection": collectionName });
   }
-  request.log.info({ req: safeRequestFields(request) }, "incoming function request");
+  request.log.info({ req: safeRequestFields(request) }, "incoming query request");
   done();
 };
 
+// PreHandler hook to bind ndc operation name to request logger and log incoming request
 const bindMutationFunctionToLogger = (
   request: FastifyRequest<{ Body: MutationRequest }>,
   reply: FastifyReply,
   done: () => void
 ) => {
-  const functionName = request.body.operations?.[0]?.name;
-  if (functionName) {
-    request.log = request.log.child({ function: functionName });
-    reply.log  = reply.log.child({ function: functionName });
+  const operationName = request.body.operations?.[0]?.name;
+  if (operationName) {
+    request.log = request.log.child({ "ndc-operation": operationName });
+    reply.log  = reply.log.child({ "ndc-operation": operationName });
   }
-  request.log.info({ req: safeRequestFields(request) }, "incoming procedure request");
+  request.log.info({ req: safeRequestFields(request) }, "incoming mutation request");
   done();
 };
 
@@ -387,9 +388,9 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.setErrorHandler(function(error, _request, reply) {
+  server.setErrorHandler(function(error, request, reply) {
     // pino trace instrumentation will add trace information to log output
-    this.log.error(error);
+    request.log.error(error);
 
     if (error.validation) {
       reply.status(400).send({
