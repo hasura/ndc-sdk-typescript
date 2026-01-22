@@ -83,21 +83,37 @@ export interface ServerOptions {
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
 
-// PreHandler hook to bind function name to request logger and log incoming request for /query and /mutation routes
-const bindFunctionToLogger = (collectionKey: 'collection' | 'operations') => {
-  return (request: FastifyRequest, _reply: FastifyReply, done: () => void) => {
-    let functionName: string | undefined;
-    if (collectionKey === 'collection') {
-      functionName = (request.body as any)?.collection;
-    } else {
-      functionName = (request.body as any)?.operations?.[0]?.name;
-    }
-    if (functionName) {
-      request.log = request.log.child({ function: functionName });
-    }
-    request.log.info({ req: request }, "incoming request");
-    done();
-  };
+// Helper to extract safe request fields for logging (avoids leaking headers, body, etc.)
+const safeRequestFields = (request: FastifyRequest) => ({
+  method: request.method,
+  url: request.url,
+});
+
+// PreHandler hooks to bind function name to request logger and log incoming request
+const bindQueryFunctionToLogger = (
+  request: FastifyRequest<{ Body: QueryRequest }>,
+  _reply: FastifyReply,
+  done: () => void
+) => {
+  const functionName = request.body.collection;
+  if (functionName) {
+    request.log = request.log.child({ function: functionName });
+  }
+  request.log.info({ req: safeRequestFields(request) }, "incoming request");
+  done();
+};
+
+const bindMutationFunctionToLogger = (
+  request: FastifyRequest<{ Body: MutationRequest }>,
+  _reply: FastifyReply,
+  done: () => void
+) => {
+  const functionName = request.body.operations?.[0]?.name;
+  if (functionName) {
+    request.log = request.log.child({ function: functionName });
+  }
+  request.log.info({ req: safeRequestFields(request) }, "incoming request");
+  done();
 };
 
 export async function startServer<Configuration, State>(
@@ -142,14 +158,18 @@ export async function startServer<Configuration, State>(
   server.addHook("onRequest", async (request, _reply) => {
     const url = request.routeOptions.url;
     if (url !== "/query" && url !== "/mutation") {
-      request.log.info({ req: request }, "incoming request");
+      request.log.info({ req: safeRequestFields(request) }, "incoming request");
     }
   });
 
   // Log request completed for all routes
   server.addHook("onResponse", async (request, reply) => {
     request.log.info(
-      { req: request, res: reply, responseTime: reply.elapsedTime },
+      {
+        req: safeRequestFields(request),
+        res: { statusCode: reply.statusCode },
+        responseTime: reply.elapsedTime,
+      },
       "request completed"
     );
   });
@@ -276,7 +296,7 @@ export async function startServer<Configuration, State>(
   server.post<{ Body: QueryRequest }>(
     "/query",
     {
-      preHandler: bindFunctionToLogger('collection'),
+      preHandler: bindQueryFunctionToLogger,
       schema: {
         body: QueryRequestSchema,
         response: {
@@ -330,7 +350,7 @@ export async function startServer<Configuration, State>(
   server.post<{ Body: MutationRequest }>(
     "/mutation",
     {
-      preHandler: bindFunctionToLogger('operations'),
+      preHandler: bindMutationFunctionToLogger,
       schema: {
         body: MutationRequestSchema,
         response: {

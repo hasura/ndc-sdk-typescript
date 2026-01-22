@@ -73,6 +73,10 @@ Key environment variables:
 ### Schema Types (`src/schema/`)
 All NDC spec types are generated and exported from `schema.generated.ts`. The `index.ts` creates JSON schema wrappers used by Fastify for request/response validation.
 
+## Code Quality Guidelines
+
+- **Avoid `any` types** - Use proper TypeScript types instead of `any`. Leverage the generated types from `src/schema/schema.generated.ts` for NDC spec types. Create properly typed functions rather than using type casts with `any`.
+
 ## Runtime Configuration
 
 Environment variables / CLI options for connector servers:
