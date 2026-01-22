@@ -1,4 +1,4 @@
-import Fastify, { FastifyRequest } from "fastify";
+import Fastify, { FastifyReply, FastifyRequest } from "fastify";
 import compress from "@fastify/compress";
 import opentelemetry, {
   SpanStatusCode,
@@ -82,6 +82,41 @@ export interface ServerOptions {
 }
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
+
+// Helper to extract safe request fields for logging (avoids leaking headers, body, etc.)
+const safeRequestFields = (request: FastifyRequest) => ({
+  method: request.method,
+  url: request.url,
+});
+
+// PreHandler hooks to bind function name to request logger and log incoming request
+const bindQueryFunctionToLogger = (
+  request: FastifyRequest<{ Body: QueryRequest }>,
+  reply: FastifyReply,
+  done: () => void
+) => {
+  const functionName = request.body.collection;
+  if (functionName) {
+    request.log = request.log.child({ function: functionName });
+    reply.log  = reply.log.child({ function: functionName });
+  }
+  request.log.info({ req: safeRequestFields(request) }, "incoming function request");
+  done();
+};
+
+const bindMutationFunctionToLogger = (
+  request: FastifyRequest<{ Body: MutationRequest }>,
+  reply: FastifyReply,
+  done: () => void
+) => {
+  const functionName = request.body.operations?.[0]?.name;
+  if (functionName) {
+    request.log = request.log.child({ function: functionName });
+    reply.log  = reply.log.child({ function: functionName });
+  }
+  request.log.info({ req: safeRequestFields(request) }, "incoming procedure request");
+  done();
+};
 
 export async function startServer<Configuration, State>(
   connector: Connector<Configuration, State>,
@@ -238,9 +273,10 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.post(
+  server.post<{ Body: QueryRequest }>(
     "/query",
     {
+      preHandler: bindQueryFunctionToLogger,
       schema: {
         body: QueryRequestSchema,
         response: {
@@ -249,11 +285,7 @@ export async function startServer<Configuration, State>(
         },
       },
     },
-    async (
-      request: FastifyRequest<{
-        Body: QueryRequest;
-      }>
-    ) => {
+    async (request) => {
       request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Query Request");
 
       const queryResponse = await withActiveSpan(
@@ -295,9 +327,10 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.post(
+  server.post<{ Body: MutationRequest }>(
     "/mutation",
     {
+      preHandler: bindMutationFunctionToLogger,
       schema: {
         body: MutationRequestSchema,
         response: {
@@ -306,11 +339,7 @@ export async function startServer<Configuration, State>(
         },
       },
     },
-    async (
-      request: FastifyRequest<{
-        Body: MutationRequest;
-      }>
-    ): Promise<MutationResponse> => {
+    async (request): Promise<MutationResponse> => {
       request.log.debug({ requestHeaders: request.headers, requestBody: request.body }, "Mutation Request");
 
       const mutationResponse = await withActiveSpan(
