@@ -43,7 +43,7 @@ export function initTelemetry(
     serviceName,
     metricReader: new PeriodicExportingMetricReader({
       exporter: exporters.metricsExporter,
-    }),
+    }) as unknown as opentelemetry.metrics.MetricReader,
     instrumentations: [
       new HttpInstrumentation({
         applyCustomAttributesOnSpan: (span, request, response) => {
