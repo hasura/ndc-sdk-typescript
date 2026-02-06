@@ -2,6 +2,11 @@
 
 ## Unreleased changes
 
+## [8.4.0] - 2026-02-05
+- Upgraded fastify from 4.x to 5.x to fix CVE-2026-25223 (HIGH severity)
+- Updated all OpenTelemetry packages to latest versions
+- Updated json-schema-to-typescript to fix deprecated dependency warnings
+
 ## [8.3.0] - 2026-01-22
 - Logging of requests, responses and errors has been improved to include the collection/operation name if available ([#51](https://github.com/hasura/ndc-sdk-typescript/pull/51), [#54](https://github.com/hasura/ndc-sdk-typescript/pull/54))
 

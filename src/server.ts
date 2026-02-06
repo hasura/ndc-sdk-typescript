@@ -388,11 +388,15 @@ export async function startServer<Configuration, State>(
     }
   );
 
-  server.setErrorHandler(function(error, request, reply) {
+  server.setErrorHandler(function(error: unknown, request, reply) {
     // pino trace instrumentation will add trace information to log output
     request.log.error(error);
 
-    if (error.validation) {
+    // Type guard for Fastify validation errors
+    const isValidationError = (e: unknown): e is { validation: unknown } =>
+      typeof e === "object" && e !== null && "validation" in e;
+
+    if (isValidationError(error)) {
       reply.status(400).send({
         message:
           "Validation Error - https://fastify.dev/docs/latest/Reference/Validation-and-Serialization#error-handling",
@@ -406,11 +410,14 @@ export async function startServer<Configuration, State>(
       });
     } else {
       const span = opentelemetry.trace.getActiveSpan();
-      span?.recordException(error);
+      if (error instanceof Error) {
+        span?.recordException(error);
+      }
       span?.setStatus({ code: SpanStatusCode.ERROR });
 
+      const message = error instanceof Error ? error.message : "Internal Server Error";
       reply.status(500).send({
-        message: error.message,
+        message,
         details: {},
       });
     }
