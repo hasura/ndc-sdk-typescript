@@ -196,6 +196,13 @@ export type ExtractionFunctionDefinition =
       result_type: string;
     }
   | {
+      type: "millisecond";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
       type: "second";
       /**
        * The result type, which must be a defined scalar type in the schema response.
@@ -663,6 +670,789 @@ export type MutationOperationResults = {
   type: "procedure";
   result: unknown;
 };
+export type Relation =
+  | {
+      type: "from";
+      collection: string;
+      columns: string[];
+      arguments?: {
+        [k: string]: RelationalLiteral;
+      };
+    }
+  | {
+      type: "paginate";
+      input: Relation;
+      fetch?: number | null;
+      skip: number;
+    }
+  | {
+      type: "project";
+      input: Relation;
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "filter";
+      input: Relation;
+      predicate: RelationalExpression;
+    }
+  | {
+      type: "sort";
+      input: Relation;
+      exprs: Sort[];
+    }
+  | {
+      type: "join";
+      left: Relation;
+      right: Relation;
+      on: JoinOn[];
+      join_type: JoinType;
+    }
+  | {
+      type: "aggregate";
+      input: Relation;
+      /**
+       * Only non-empty if the 'relational_query.aggregate.group_by' capability is supported.
+       */
+      group_by: RelationalExpression[];
+      aggregates: RelationalExpression[];
+    }
+  | {
+      type: "window";
+      input: Relation;
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "union";
+      relations: Relation[];
+    };
+export type RelationalLiteral =
+  | {
+      type: "null";
+    }
+  | {
+      type: "boolean";
+      value: boolean;
+    }
+  | {
+      type: "string";
+      value: string;
+    }
+  | {
+      type: "int8";
+      value: number;
+    }
+  | {
+      type: "int16";
+      value: number;
+    }
+  | {
+      type: "int32";
+      value: number;
+    }
+  | {
+      type: "int64";
+      value: number;
+    }
+  | {
+      type: "uint8";
+      value: number;
+    }
+  | {
+      type: "uint16";
+      value: number;
+    }
+  | {
+      type: "uint32";
+      value: number;
+    }
+  | {
+      type: "uint64";
+      value: number;
+    }
+  | {
+      type: "float32";
+      value: number;
+    }
+  | {
+      type: "float64";
+      value: number;
+    }
+  | {
+      type: "decimal128";
+      value: number;
+      scale: number;
+      prec: number;
+    }
+  | {
+      type: "decimal256";
+      value: string;
+      scale: number;
+      prec: number;
+    }
+  | {
+      type: "date32";
+      value: number;
+    }
+  | {
+      type: "date64";
+      value: number;
+    }
+  | {
+      type: "time32_second";
+      value: number;
+    }
+  | {
+      type: "time32_millisecond";
+      value: number;
+    }
+  | {
+      type: "time64_microsecond";
+      value: number;
+    }
+  | {
+      type: "time64_nanosecond";
+      value: number;
+    }
+  | {
+      type: "timestamp_second";
+      value: number;
+    }
+  | {
+      type: "timestamp_millisecond";
+      value: number;
+    }
+  | {
+      type: "timestamp_microsecond";
+      value: number;
+    }
+  | {
+      type: "timestamp_nanosecond";
+      value: number;
+    }
+  | {
+      type: "duration_second";
+      value: number;
+    }
+  | {
+      type: "duration_millisecond";
+      value: number;
+    }
+  | {
+      type: "duration_microsecond";
+      value: number;
+    }
+  | {
+      type: "duration_nanosecond";
+      value: number;
+    }
+  | {
+      type: "interval";
+      months: number;
+      days: number;
+      nanoseconds: number;
+    };
+export type RelationalExpression =
+  | {
+      type: "literal";
+      literal: RelationalLiteral;
+    }
+  | {
+      type: "column";
+      index: number;
+    }
+  | {
+      type: "case";
+      scrutinee?: RelationalExpression | null;
+      when: CaseWhen[];
+      default?: RelationalExpression | null;
+    }
+  | {
+      type: "and";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "or";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "not";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "eq";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "not_eq";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "is_distinct_from";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "is_not_distinct_from";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "lt";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "lt_eq";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "gt";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "gt_eq";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "is_not_null";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_null";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_true";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_false";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_not_true";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_not_false";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "in";
+      expr: RelationalExpression;
+      list: RelationalExpression[];
+    }
+  | {
+      type: "not_in";
+      expr: RelationalExpression;
+      list: RelationalExpression[];
+    }
+  | {
+      type: "like";
+      expr: RelationalExpression;
+      pattern: RelationalExpression;
+    }
+  | {
+      type: "not_like";
+      expr: RelationalExpression;
+      pattern: RelationalExpression;
+    }
+  | {
+      type: "i_like";
+      expr: RelationalExpression;
+      pattern: RelationalExpression;
+    }
+  | {
+      type: "not_i_like";
+      expr: RelationalExpression;
+      pattern: RelationalExpression;
+    }
+  | {
+      type: "between";
+      low: RelationalExpression;
+      expr: RelationalExpression;
+      high: RelationalExpression;
+    }
+  | {
+      type: "not_between";
+      low: RelationalExpression;
+      expr: RelationalExpression;
+      high: RelationalExpression;
+    }
+  | {
+      type: "contains";
+      str: RelationalExpression;
+      search_str: RelationalExpression;
+    }
+  | {
+      type: "is_na_n";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "is_zero";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "plus";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "minus";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "multiply";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "divide";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "modulo";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "negate";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "cast";
+      expr: RelationalExpression;
+      /**
+       * Optional for now, but will be required in the future
+       */
+      from_type?: CastType | null;
+      as_type: CastType;
+    }
+  | {
+      type: "try_cast";
+      expr: RelationalExpression;
+      /**
+       * Optional for now, but will be required in the future
+       */
+      from_type?: CastType | null;
+      as_type: CastType;
+    }
+  | {
+      type: "abs";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "array_element";
+      column: RelationalExpression;
+      index: number;
+    }
+  | {
+      type: "b_trim";
+      str: RelationalExpression;
+      trim_str?: RelationalExpression | null;
+    }
+  | {
+      type: "ceil";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "character_length";
+      str: RelationalExpression;
+    }
+  | {
+      type: "coalesce";
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "concat";
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "cos";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "current_date";
+    }
+  | {
+      type: "current_time";
+    }
+  | {
+      type: "current_timestamp";
+    }
+  | {
+      type: "date_part";
+      expr: RelationalExpression;
+      part: DatePartUnit;
+    }
+  | {
+      type: "date_trunc";
+      expr: RelationalExpression;
+      part: RelationalExpression;
+    }
+  | {
+      type: "exp";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "floor";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "get_field";
+      column: RelationalExpression;
+      field: string;
+    }
+  | {
+      type: "greatest";
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "least";
+      exprs: RelationalExpression[];
+    }
+  | {
+      type: "left";
+      str: RelationalExpression;
+      n: RelationalExpression;
+    }
+  | {
+      type: "ln";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "log";
+      expr: RelationalExpression;
+      base?: RelationalExpression | null;
+    }
+  | {
+      type: "log10";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "log2";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "l_pad";
+      str: RelationalExpression;
+      n: RelationalExpression;
+      padding_str?: RelationalExpression | null;
+    }
+  | {
+      type: "l_trim";
+      str: RelationalExpression;
+      trim_str?: RelationalExpression | null;
+    }
+  | {
+      type: "null_if";
+      expr1: RelationalExpression;
+      expr2: RelationalExpression;
+    }
+  | {
+      type: "nvl";
+      expr1: RelationalExpression;
+      expr2: RelationalExpression;
+    }
+  | {
+      type: "power";
+      base: RelationalExpression;
+      exp: RelationalExpression;
+    }
+  | {
+      type: "random";
+    }
+  | {
+      type: "replace";
+      str: RelationalExpression;
+      substr: RelationalExpression;
+      replacement: RelationalExpression;
+    }
+  | {
+      type: "reverse";
+      str: RelationalExpression;
+    }
+  | {
+      type: "right";
+      str: RelationalExpression;
+      n: RelationalExpression;
+    }
+  | {
+      type: "round";
+      expr: RelationalExpression;
+      prec?: RelationalExpression | null;
+    }
+  | {
+      type: "r_pad";
+      str: RelationalExpression;
+      n: RelationalExpression;
+      padding_str?: RelationalExpression | null;
+    }
+  | {
+      type: "r_trim";
+      str: RelationalExpression;
+      trim_str?: RelationalExpression | null;
+    }
+  | {
+      type: "sqrt";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "str_pos";
+      str: RelationalExpression;
+      substr: RelationalExpression;
+    }
+  | {
+      type: "substr";
+      str: RelationalExpression;
+      start_pos: RelationalExpression;
+      len?: RelationalExpression | null;
+    }
+  | {
+      type: "substr_index";
+      str: RelationalExpression;
+      delim: RelationalExpression;
+      count: RelationalExpression;
+    }
+  | {
+      type: "tan";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "to_date";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "to_timestamp";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "trunc";
+      expr: RelationalExpression;
+      prec?: RelationalExpression | null;
+    }
+  | {
+      type: "to_lower";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "to_upper";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "binary_concat";
+      left: RelationalExpression;
+      right: RelationalExpression;
+    }
+  | {
+      type: "average";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "bool_and";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "bool_or";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "count";
+      expr: RelationalExpression;
+      /**
+       * Only used when in specific contexts where the appropriate capability is supported: * During projection: `relational_query.project.expression.aggregate.count.distinct` * During filtering: `relational_query.filter.aggregate.count.distinct` * During sorting:`relational_query.sort.expression.aggregate.count.distinct` * During joining: `relational_query.join.expression.aggregate.count.distinct` * During aggregation: `relational_query.aggregate.expression.aggregate.count.distinct` * During windowing: `relational_query.window.expression.aggregate.count.distinct`
+       */
+      distinct: boolean;
+    }
+  | {
+      type: "first_value";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "last_value";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "max";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "median";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "min";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "string_agg";
+      expr: RelationalExpression;
+      separator: string;
+      /**
+       * Only used when in specific contexts where the appropriate capability is supported: * During projection: `relational_query.project.expression.aggregate.string_agg.distinct` * During filtering: `relational_query.filter.aggregate.string_agg.distinct` * During sorting:`relational_query.sort.expression.aggregate.string_agg.distinct` * During joining: `relational_query.join.expression.aggregate.string_agg.distinct` * During aggregation: `relational_query.aggregate.expression.aggregate.string_agg.distinct` * During windowing: `relational_query.window.expression.aggregate.string_agg.distinct`
+       */
+      distinct: boolean;
+      /**
+       * Only used when in specific contexts where the appropriate capability is supported: * During projection: `relational_query.project.expression.aggregate.string_agg.order_by` * During filtering: `relational_query.filter.aggregate.string_agg.order_by` * During sorting:`relational_query.sort.expression.aggregate.string_agg.order_by` * During joining: `relational_query.join.expression.aggregate.string_agg.order_by` * During aggregation: `relational_query.aggregate.expression.aggregate.string_agg.order_by` * During windowing: `relational_query.window.expression.aggregate.string_agg.order_by`
+       */
+      order_by?: Sort[] | null;
+    }
+  | {
+      type: "sum";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "var";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "stddev";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "stddev_pop";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "approx_percentile_cont";
+      expr: RelationalExpression;
+      percentile: number;
+    }
+  | {
+      type: "array_agg";
+      expr: RelationalExpression;
+      /**
+       * Only used when in specific contexts where the appropriate capability is supported: * During projection: `relational_query.project.expression.aggregate.array_agg.distinct` * During filtering: `relational_query.filter.aggregate.array_agg.distinct` * During sorting:`relational_query.sort.expression.aggregate.array_agg.distinct` * During joining: `relational_query.join.expression.aggregate.array_agg.distinct` * During aggregation: `relational_query.aggregate.expression.aggregate.array_agg.distinct` * During windowing: `relational_query.window.expression.aggregate.array_agg.distinct`
+       */
+      distinct: boolean;
+      /**
+       * Only used when in specific contexts where the appropriate capability is supported: * During projection: `relational_query.project.expression.aggregate.array_agg.order_by` * During filtering: `relational_query.filter.aggregate.array_agg.order_by` * During sorting:`relational_query.sort.expression.aggregate.array_agg.order_by` * During joining: `relational_query.join.expression.aggregate.array_agg.order_by` * During aggregation: `relational_query.aggregate.expression.aggregate.array_agg.order_by` * During windowing: `relational_query.window.expression.aggregate.array_agg.order_by`
+       */
+      order_by?: Sort[] | null;
+    }
+  | {
+      type: "approx_distinct";
+      expr: RelationalExpression;
+    }
+  | {
+      type: "row_number";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+    }
+  | {
+      type: "dense_rank";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+    }
+  | {
+      type: "n_tile";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+      n: number;
+    }
+  | {
+      type: "rank";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+    }
+  | {
+      type: "cume_dist";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+    }
+  | {
+      type: "percent_rank";
+      order_by: Sort[];
+      partition_by: RelationalExpression[];
+    };
+export type CastType =
+  | {
+      type: "boolean";
+    }
+  | {
+      type: "utf8";
+    }
+  | {
+      type: "int8";
+    }
+  | {
+      type: "int16";
+    }
+  | {
+      type: "int32";
+    }
+  | {
+      type: "int64";
+    }
+  | {
+      type: "uint8";
+    }
+  | {
+      type: "uint16";
+    }
+  | {
+      type: "uint32";
+    }
+  | {
+      type: "uint64";
+    }
+  | {
+      type: "float32";
+    }
+  | {
+      type: "float64";
+    }
+  | {
+      type: "decimal128";
+      scale: number;
+      prec: number;
+    }
+  | {
+      type: "decimal256";
+      scale: number;
+      prec: number;
+    }
+  | {
+      type: "date";
+    }
+  | {
+      type: "time";
+    }
+  | {
+      type: "timestamp";
+    }
+  | {
+      type: "duration";
+    }
+  | {
+      type: "interval";
+    };
+export type DatePartUnit =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day_of_week"
+  | "day_of_year"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "microsecond"
+  | "millisecond"
+  | "nanosecond"
+  | "epoch";
+export type NullsSort = "nulls_first" | "nulls_last";
+export type JoinType = "left" | "right" | "inner" | "full" | "left_anti" | "left_semi" | "right_anti" | "right_semi";
 
 export interface SchemaRoot {
   capabilities_response: CapabilitiesResponse;
@@ -674,6 +1464,14 @@ export interface SchemaRoot {
   explain_response: ExplainResponse;
   error_response: ErrorResponse;
   validate_response: ValidateResponse;
+  relational_delete_request: RelationalDeleteRequest;
+  relational_delete_response: RelationalDeleteResponse;
+  relational_insert_request: RelationalInsertRequest;
+  relational_insert_response: RelationalInsertResponse;
+  relational_query: RelationalQuery;
+  relational_query_response: RelationalQueryResponse;
+  relational_update_request: RelationalUpdateRequest;
+  relational_update_response: RelationalUpdateResponse;
 }
 export interface CapabilitiesResponse {
   version: string;
@@ -686,6 +1484,14 @@ export interface Capabilities {
   query: QueryCapabilities;
   mutation: MutationCapabilities;
   relationships?: RelationshipCapabilities | null;
+  /**
+   * Does the connector support the relational query API? This feature is experimental and subject to breaking changes within minor versions.
+   */
+  relational_query?: RelationalQueryCapabilities | null;
+  /**
+   * Does the connector support the relational mutation API? This feature is experimental and subject to breaking changes within minor versions.
+   */
+  relational_mutation?: RelationalMutationCapabilities | null;
 }
 export interface QueryCapabilities {
   /**
@@ -827,6 +1633,202 @@ export interface NestedRelationshipCapabilities {
    */
   ordering?: LeafCapability | null;
 }
+/**
+ * Describes which features of the relational query API are supported by the connector. This feature is experimental and subject to breaking changes within minor versions.
+ */
+export interface RelationalQueryCapabilities {
+  project: RelationalProjectionCapabilities;
+  filter?: RelationalExpressionCapabilities | null;
+  sort?: RelationalSortCapabilities | null;
+  join?: RelationalJoinCapabilities | null;
+  aggregate?: RelationalAggregateCapabilities | null;
+  window?: RelationalWindowCapabilities | null;
+  union?: LeafCapability | null;
+}
+export interface RelationalProjectionCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+export interface RelationalExpressionCapabilities {
+  conditional: RelationalConditionalExpressionCapabilities;
+  comparison: RelationalFilterExpressionCapabilities;
+  scalar: RelationalScalarExpressionCapabilities;
+  aggregate: RelationalAggregateExpressionCapabilities;
+  window: RelationalWindowExpressionCapabilities;
+  scalar_types?: RelationalScalarTypeCapabilities | null;
+}
+export interface RelationalConditionalExpressionCapabilities {
+  case?: RelationalCaseCapabilities | null;
+  nullif?: LeafCapability | null;
+}
+export interface RelationalCaseCapabilities {
+  scrutinee?: LeafCapability | null;
+}
+export interface RelationalFilterExpressionCapabilities {
+  between?: LeafCapability | null;
+  contains?: LeafCapability | null;
+  greater_than_eq?: LeafCapability | null;
+  greater_than?: LeafCapability | null;
+  ilike?: LeafCapability | null;
+  in_list?: LeafCapability | null;
+  is_distinct_from?: LeafCapability | null;
+  is_false?: LeafCapability | null;
+  is_nan?: LeafCapability | null;
+  is_null?: LeafCapability | null;
+  is_true?: LeafCapability | null;
+  is_zero?: LeafCapability | null;
+  less_than_eq?: LeafCapability | null;
+  less_than?: LeafCapability | null;
+  like?: LeafCapability | null;
+}
+export interface RelationalScalarExpressionCapabilities {
+  abs?: LeafCapability | null;
+  and?: LeafCapability | null;
+  array_element?: LeafCapability | null;
+  binary_concat?: LeafCapability | null;
+  btrim?: LeafCapability | null;
+  ceil?: LeafCapability | null;
+  character_length?: LeafCapability | null;
+  coalesce?: LeafCapability | null;
+  concat?: LeafCapability | null;
+  cos?: LeafCapability | null;
+  current_date?: LeafCapability | null;
+  current_time?: LeafCapability | null;
+  current_timestamp?: LeafCapability | null;
+  date_part?: DatePartScalarExpressionCapability | null;
+  date_trunc?: LeafCapability | null;
+  divide?: LeafCapability | null;
+  exp?: LeafCapability | null;
+  floor?: LeafCapability | null;
+  get_field?: LeafCapability | null;
+  greatest?: LeafCapability | null;
+  least?: LeafCapability | null;
+  left?: LeafCapability | null;
+  ln?: LeafCapability | null;
+  log?: LeafCapability | null;
+  log10?: LeafCapability | null;
+  log2?: LeafCapability | null;
+  lpad?: LeafCapability | null;
+  ltrim?: LeafCapability | null;
+  minus?: LeafCapability | null;
+  modulo?: LeafCapability | null;
+  multiply?: LeafCapability | null;
+  negate?: LeafCapability | null;
+  not?: LeafCapability | null;
+  nvl?: LeafCapability | null;
+  or?: LeafCapability | null;
+  plus?: LeafCapability | null;
+  power?: LeafCapability | null;
+  random?: LeafCapability | null;
+  replace?: LeafCapability | null;
+  reverse?: LeafCapability | null;
+  right?: LeafCapability | null;
+  round?: LeafCapability | null;
+  rpad?: LeafCapability | null;
+  rtrim?: LeafCapability | null;
+  sqrt?: LeafCapability | null;
+  str_pos?: LeafCapability | null;
+  substr_index?: LeafCapability | null;
+  substr?: LeafCapability | null;
+  tan?: LeafCapability | null;
+  to_date?: LeafCapability | null;
+  to_lower?: LeafCapability | null;
+  to_timestamp?: LeafCapability | null;
+  to_upper?: LeafCapability | null;
+  trunc?: LeafCapability | null;
+}
+export interface DatePartScalarExpressionCapability {
+  year?: LeafCapability | null;
+  quarter?: LeafCapability | null;
+  month?: LeafCapability | null;
+  week?: LeafCapability | null;
+  day_of_week?: LeafCapability | null;
+  day_of_year?: LeafCapability | null;
+  day?: LeafCapability | null;
+  hour?: LeafCapability | null;
+  minute?: LeafCapability | null;
+  second?: LeafCapability | null;
+  microsecond?: LeafCapability | null;
+  millisecond?: LeafCapability | null;
+  nanosecond?: LeafCapability | null;
+  epoch?: LeafCapability | null;
+}
+export interface RelationalAggregateExpressionCapabilities {
+  avg?: LeafCapability | null;
+  bool_and?: LeafCapability | null;
+  bool_or?: LeafCapability | null;
+  count?: RelationalAggregateFunctionCapabilities | null;
+  first_value?: LeafCapability | null;
+  last_value?: LeafCapability | null;
+  max?: LeafCapability | null;
+  median?: LeafCapability | null;
+  min?: LeafCapability | null;
+  string_agg?: RelationalOrderedAggregateFunctionCapabilities | null;
+  string_agg_with_separator?: RelationalOrderedAggregateFunctionCapabilities | null;
+  sum?: LeafCapability | null;
+  var?: LeafCapability | null;
+  stddev?: LeafCapability | null;
+  stddev_pop?: LeafCapability | null;
+  approx_percentile_cont?: LeafCapability | null;
+  array_agg?: RelationalOrderedAggregateFunctionCapabilities | null;
+  approx_distinct?: LeafCapability | null;
+}
+export interface RelationalAggregateFunctionCapabilities {
+  distinct?: LeafCapability | null;
+}
+export interface RelationalOrderedAggregateFunctionCapabilities {
+  distinct?: LeafCapability | null;
+  order_by?: LeafCapability | null;
+}
+export interface RelationalWindowExpressionCapabilities {
+  row_number?: LeafCapability | null;
+  dense_rank?: LeafCapability | null;
+  ntile?: LeafCapability | null;
+  rank?: LeafCapability | null;
+  cume_dist?: LeafCapability | null;
+  percent_rank?: LeafCapability | null;
+}
+export interface RelationalScalarTypeCapabilities {
+  /**
+   * Does the connector support the INTERVAL scalar type? Both interval literals and casts to the INTERVAL type are implied by this capability.
+   */
+  interval?: LeafCapability | null;
+  /**
+   * Does the connector support `from_type` in cast?
+   */
+  from_type?: LeafCapability | null;
+}
+export interface RelationalSortCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+export interface RelationalJoinCapabilities {
+  expression: RelationalExpressionCapabilities;
+  join_types: RelationalJoinTypeCapabilities;
+}
+export interface RelationalJoinTypeCapabilities {
+  left?: LeafCapability | null;
+  right?: LeafCapability | null;
+  inner?: LeafCapability | null;
+  full?: LeafCapability | null;
+  left_semi?: LeafCapability | null;
+  left_anti?: LeafCapability | null;
+  right_semi?: LeafCapability | null;
+  right_anti?: LeafCapability | null;
+}
+export interface RelationalAggregateCapabilities {
+  expression: RelationalExpressionCapabilities;
+  group_by?: LeafCapability | null;
+}
+export interface RelationalWindowCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+/**
+ * Describes which features of the relational mutation API are supported by the connector. This feature is experimental and subject to breaking changes within minor versions.
+ */
+export interface RelationalMutationCapabilities {
+  insert?: LeafCapability | null;
+  update?: LeafCapability | null;
+  delete?: LeafCapability | null;
+}
 export interface SchemaResponse {
   /**
    * A list of scalar types which will be used as the types of collection columns
@@ -856,6 +1858,10 @@ export interface SchemaResponse {
    * Schema data which is relevant to features enabled by capabilities
    */
   capabilities?: CapabilitySchemaInfo | null;
+  /**
+   * Request level arguments which are required for queries and mutations
+   */
+  request_arguments?: RequestLevelArguments | null;
 }
 /**
  * The definition of a scalar type, i.e. types that can be used as the types of columns.
@@ -973,12 +1979,30 @@ export interface CollectionInfo {
   uniqueness_constraints: {
     [k: string]: UniquenessConstraint;
   };
+  /**
+   * Information about relational mutation capabilities for this collection
+   */
+  relational_mutations?: RelationalMutationInfo | null;
 }
 export interface UniquenessConstraint {
   /**
    * A list of columns which this constraint requires to be unique
    */
   unique_columns: string[];
+}
+export interface RelationalMutationInfo {
+  /**
+   * Whether inserts are supported for this collection
+   */
+  insertable: boolean;
+  /**
+   * Whether updates are supported for this collection
+   */
+  updatable: boolean;
+  /**
+   * Whether deletes are supported for this collection
+   */
+  deletable: boolean;
 }
 export interface FunctionInfo {
   /**
@@ -1038,6 +2062,26 @@ export interface AggregateCapabilitiesSchemaInfo {
    */
   count_scalar_type: string;
 }
+export interface RequestLevelArguments {
+  /**
+   * Any arguments that all Query requests require
+   */
+  query_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+  /**
+   * Any arguments that all Mutation requests require
+   */
+  mutation_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+  /**
+   * Any arguments that all Relational Query requests require
+   */
+  relational_query_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+}
 /**
  * This is the request body of the query POST endpoint
  */
@@ -1070,6 +2114,12 @@ export interface QueryRequest {
         [k: string]: unknown;
       }[]
     | null;
+  /**
+   * Values to be provided to request-level arguments.
+   */
+  request_arguments?: {
+    [k: string]: unknown;
+  } | null;
 }
 export interface Query {
   /**
@@ -1253,6 +2303,12 @@ export interface MutationRequest {
   collection_relationships: {
     [k: string]: Relationship;
   };
+  /**
+   * Values to be provided to request-level arguments.
+   */
+  request_arguments?: {
+    [k: string]: unknown;
+  } | null;
 }
 export interface MutationResponse {
   /**
@@ -1284,4 +2340,99 @@ export interface ValidateResponse {
   schema: SchemaResponse;
   capabilities: CapabilitiesResponse;
   resolved_configuration: string;
+}
+export interface RelationalDeleteRequest {
+  /**
+   * The name of the collection to delete from
+   */
+  collection: string;
+  /**
+   * Values to be provided to any collection arguments
+   */
+  arguments: {
+    [k: string]: Argument;
+  };
+  /**
+   * The relation that identifies which rows to delete
+   */
+  relation: Relation;
+}
+export interface CaseWhen {
+  when: RelationalExpression;
+  then: RelationalExpression;
+}
+export interface Sort {
+  expr: RelationalExpression;
+  direction: OrderDirection;
+  nulls_sort: NullsSort;
+}
+export interface JoinOn {
+  left: RelationalExpression;
+  right: RelationalExpression;
+}
+export interface RelationalDeleteResponse {
+  /**
+   * The number of rows that were deleted
+   */
+  affected_rows: number;
+}
+export interface RelationalInsertRequest {
+  /**
+   * The name of the collection to insert into
+   */
+  collection: string;
+  /**
+   * Values to be provided to any collection arguments
+   */
+  arguments: {
+    [k: string]: Argument;
+  };
+  /**
+   * The columns to insert values for
+   */
+  columns: string[];
+  /**
+   * The rows to insert, each row containing values for the specified columns
+   */
+  rows: unknown[][];
+}
+export interface RelationalInsertResponse {
+  /**
+   * The number of rows that were inserted
+   */
+  affected_rows: number;
+}
+export interface RelationalQuery {
+  root_relation: Relation;
+  /**
+   * Values to be provided to request-level arguments.
+   */
+  request_arguments?: {
+    [k: string]: unknown;
+  } | null;
+}
+export interface RelationalQueryResponse {
+  rows: unknown[][];
+}
+export interface RelationalUpdateRequest {
+  /**
+   * The name of the collection to update
+   */
+  collection: string;
+  /**
+   * Values to be provided to any collection arguments
+   */
+  arguments: {
+    [k: string]: Argument;
+  };
+  /**
+   * The relation that identifies which rows to update
+   */
+  relation: Relation;
+}
+export interface RelationalUpdateResponse {
+  /**
+   * The number of rows that were updated
+   */
+  affected_rows: number;
 }
