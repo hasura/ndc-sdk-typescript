@@ -79,6 +79,7 @@ export interface ServerOptions {
   serviceTokenSecret: string | undefined;
   logLevel: string;
   prettyPrintLogs: string;
+  bodyLimit: number | undefined;
 }
 
 const tracer = opentelemetry.trace.getTracer("ndc-sdk-typescript.server");
@@ -134,7 +135,7 @@ export async function startServer<Configuration, State>(
 
   const server = Fastify({
     logger: configureFastifyLogging(options),
-    bodyLimit: 1048576 * 30, // 30mb body limit
+    bodyLimit: options.bodyLimit ?? 1048576 * 30, // 30mb body limit
     ajv: {
       customOptions: customAjvOptions,
     },

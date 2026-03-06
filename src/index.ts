@@ -54,7 +54,10 @@ export function getServeCommand<Configuration, State>(
       new Option("--service-token-secret <secret>").env("HASURA_SERVICE_TOKEN_SECRET")
     )
     .addOption(new Option("--log-level <level>").env("HASURA_LOG_LEVEL").default("info"))
-    .addOption(new Option("--pretty-print-logs").env("HASURA_PRETTY_PRINT_LOGS").default(false));
+    .addOption(new Option("--pretty-print-logs").env("HASURA_PRETTY_PRINT_LOGS").default(false))
+    .addOption(
+      new Option("--body-limit <bytes>").env("HASURA_BODY_LIMIT").default(31457280).argParser(parseIntOption)
+    );
 
   if (connector) {
     command.action(async (options: ServerOptions) => {
