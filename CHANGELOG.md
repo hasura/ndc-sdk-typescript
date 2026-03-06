@@ -2,6 +2,9 @@
 
 ## Unreleased changes
 
+## [8.5.0] - 2026-03-06
+- Made the Fastify body limit configurable via `--body-limit` CLI option or `HASURA_BODY_LIMIT` environment variable (default: 30MB)
+
 ## [8.4.0] - 2026-02-05
 - Upgraded fastify from 4.x to 5.x to fix CVE-2026-25223 (HIGH severity)
 - Updated all OpenTelemetry packages to latest versions
