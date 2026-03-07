@@ -1,6 +1,9 @@
 use ndc_models::{
     CapabilitiesResponse, ErrorResponse, ExplainResponse, MutationRequest, MutationResponse,
-    QueryRequest, QueryResponse, SchemaResponse, VERSION, VERSION_HEADER_NAME,
+    QueryRequest, QueryResponse, RelationalDeleteRequest, RelationalDeleteResponse,
+    RelationalInsertRequest, RelationalInsertResponse, RelationalQuery, RelationalQueryResponse,
+    RelationalUpdateRequest, RelationalUpdateResponse, SchemaResponse, VERSION,
+    VERSION_HEADER_NAME,
 };
 use schemars::{schema_for, JsonSchema};
 use serde_derive::{Deserialize, Serialize};
@@ -18,6 +21,14 @@ struct SchemaRoot {
     explain_response: ExplainResponse,
     error_response: ErrorResponse,
     validate_response: ValidateResponse,
+    relational_delete_request: RelationalDeleteRequest,
+    relational_delete_response: RelationalDeleteResponse,
+    relational_insert_request: RelationalInsertRequest,
+    relational_insert_response: RelationalInsertResponse,
+    relational_query: RelationalQuery,
+    relational_query_response: RelationalQueryResponse,
+    relational_update_request: RelationalUpdateRequest,
+    relational_update_response: RelationalUpdateResponse,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
