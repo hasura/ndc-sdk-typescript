@@ -5,7 +5,7 @@ set -eu -o pipefail
 cargo run -- ./src/schema
 
 # Generate TypeScript types from JSON schema
-json2ts -i ./src/schema/schema.generated.json -o ./src/schema/schema.generated.ts --no-additionalProperties
+npx --package=json-schema-to-typescript json2ts -i ./src/schema/schema.generated.json -o ./src/schema/schema.generated.ts --no-additionalProperties
 echo './src/schema/schema.generated.ts generated'
 
 # Unfortunately we have a manual patch of the generated types in place
