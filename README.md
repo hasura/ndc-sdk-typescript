@@ -59,3 +59,7 @@ In order to regenerate the types, run
 ```
 > npm run regenerate-schema
 ```
+
+## TLS security
+
+See [TLS trust requirements](security/README.md) for runtime minimums and consumer rebuild requirements.

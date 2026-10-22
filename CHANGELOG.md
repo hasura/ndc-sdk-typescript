@@ -2,6 +2,8 @@
 
 ## Unreleased changes
 
+- Require patched Node.js 22.23.4 / 24.22.1 / 26.12.1 release lines and use Node 24.22.1 for SDK development and CI.
+
 ## [8.5.0] - 2026-03-06
 - Made the Fastify body limit configurable via `--body-limit` CLI option or `HASURA_BODY_LIMIT` environment variable (default: 30MB)
 
