@@ -1,8 +1,8 @@
 diff --git a/src/schema/schema.generated.ts b/src/schema/schema.generated.ts
-index 372b5ee..dc8fed2 100644
+index a460996..302edf8 100644
 --- a/src/schema/schema.generated.ts
 +++ b/src/schema/schema.generated.ts
-@@ -1101,9 +1101,7 @@ export interface RowSet {
+@@ -1498,9 +1498,7 @@ export interface RowSet {
     */
    groups?: Group[] | null;
  }

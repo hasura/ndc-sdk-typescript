@@ -196,6 +196,13 @@ export type ExtractionFunctionDefinition =
       result_type: string;
     }
   | {
+      type: "millisecond";
+      /**
+       * The result type, which must be a defined scalar type in the schema response.
+       */
+      result_type: string;
+    }
+  | {
       type: "second";
       /**
        * The result type, which must be a defined scalar type in the schema response.
@@ -686,6 +693,14 @@ export interface Capabilities {
   query: QueryCapabilities;
   mutation: MutationCapabilities;
   relationships?: RelationshipCapabilities | null;
+  /**
+   * Does the connector support the relational query API? This feature is experimental and subject to breaking changes within minor versions.
+   */
+  relational_query?: RelationalQueryCapabilities | null;
+  /**
+   * Does the connector support the relational mutation API? This feature is experimental and subject to breaking changes within minor versions.
+   */
+  relational_mutation?: RelationalMutationCapabilities | null;
 }
 export interface QueryCapabilities {
   /**
@@ -827,6 +842,212 @@ export interface NestedRelationshipCapabilities {
    */
   ordering?: LeafCapability | null;
 }
+/**
+ * Describes which features of the relational query API are supported by the connector. This feature is experimental and subject to breaking changes within minor versions.
+ */
+export interface RelationalQueryCapabilities {
+  project: RelationalProjectionCapabilities;
+  filter?: RelationalExpressionCapabilities | null;
+  sort?: RelationalSortCapabilities | null;
+  join?: RelationalJoinCapabilities | null;
+  aggregate?: RelationalAggregateCapabilities | null;
+  window?: RelationalWindowCapabilities | null;
+  union?: LeafCapability | null;
+  streaming?: LeafCapability | null;
+}
+export interface RelationalProjectionCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+export interface RelationalExpressionCapabilities {
+  conditional: RelationalConditionalExpressionCapabilities;
+  comparison: RelationalFilterExpressionCapabilities;
+  scalar: RelationalScalarExpressionCapabilities;
+  aggregate: RelationalAggregateExpressionCapabilities;
+  window: RelationalWindowExpressionCapabilities;
+  scalar_types?: RelationalScalarTypeCapabilities | null;
+}
+export interface RelationalConditionalExpressionCapabilities {
+  case?: RelationalCaseCapabilities | null;
+  nullif?: LeafCapability | null;
+}
+export interface RelationalCaseCapabilities {
+  scrutinee?: LeafCapability | null;
+}
+export interface RelationalFilterExpressionCapabilities {
+  between?: LeafCapability | null;
+  contains?: LeafCapability | null;
+  greater_than_eq?: LeafCapability | null;
+  greater_than?: LeafCapability | null;
+  ilike?: LeafCapability | null;
+  in_list?: LeafCapability | null;
+  is_distinct_from?: LeafCapability | null;
+  is_false?: LeafCapability | null;
+  is_nan?: LeafCapability | null;
+  is_null?: LeafCapability | null;
+  is_true?: LeafCapability | null;
+  is_zero?: LeafCapability | null;
+  less_than_eq?: LeafCapability | null;
+  less_than?: LeafCapability | null;
+  like?: LeafCapability | null;
+}
+export interface RelationalScalarExpressionCapabilities {
+  abs?: LeafCapability | null;
+  and?: LeafCapability | null;
+  array_element?: LeafCapability | null;
+  binary_concat?: LeafCapability | null;
+  btrim?: LeafCapability | null;
+  ceil?: LeafCapability | null;
+  character_length?: LeafCapability | null;
+  coalesce?: LeafCapability | null;
+  concat?: LeafCapability | null;
+  cos?: LeafCapability | null;
+  current_date?: LeafCapability | null;
+  current_time?: LeafCapability | null;
+  current_timestamp?: LeafCapability | null;
+  date_part?: DatePartScalarExpressionCapability | null;
+  date_trunc?: LeafCapability | null;
+  divide?: LeafCapability | null;
+  exp?: LeafCapability | null;
+  floor?: LeafCapability | null;
+  get_field?: LeafCapability | null;
+  greatest?: LeafCapability | null;
+  least?: LeafCapability | null;
+  left?: LeafCapability | null;
+  ln?: LeafCapability | null;
+  log?: LeafCapability | null;
+  log10?: LeafCapability | null;
+  log2?: LeafCapability | null;
+  lpad?: LeafCapability | null;
+  ltrim?: LeafCapability | null;
+  minus?: LeafCapability | null;
+  modulo?: LeafCapability | null;
+  multiply?: LeafCapability | null;
+  negate?: LeafCapability | null;
+  not?: LeafCapability | null;
+  nvl?: LeafCapability | null;
+  or?: LeafCapability | null;
+  plus?: LeafCapability | null;
+  power?: LeafCapability | null;
+  random?: LeafCapability | null;
+  replace?: LeafCapability | null;
+  reverse?: LeafCapability | null;
+  right?: LeafCapability | null;
+  round?: LeafCapability | null;
+  rpad?: LeafCapability | null;
+  rtrim?: LeafCapability | null;
+  sqrt?: LeafCapability | null;
+  str_pos?: LeafCapability | null;
+  substr_index?: LeafCapability | null;
+  substr?: LeafCapability | null;
+  tan?: LeafCapability | null;
+  to_date?: LeafCapability | null;
+  to_lower?: LeafCapability | null;
+  to_timestamp?: LeafCapability | null;
+  to_upper?: LeafCapability | null;
+  trunc?: LeafCapability | null;
+  json_contains?: LeafCapability | null;
+  json_get?: LeafCapability | null;
+  json_get_str?: LeafCapability | null;
+  json_get_int?: LeafCapability | null;
+  json_get_float?: LeafCapability | null;
+  json_get_bool?: LeafCapability | null;
+  json_get_json?: LeafCapability | null;
+  json_as_text?: LeafCapability | null;
+  json_length?: LeafCapability | null;
+}
+export interface DatePartScalarExpressionCapability {
+  year?: LeafCapability | null;
+  quarter?: LeafCapability | null;
+  month?: LeafCapability | null;
+  week?: LeafCapability | null;
+  day_of_week?: LeafCapability | null;
+  day_of_year?: LeafCapability | null;
+  day?: LeafCapability | null;
+  hour?: LeafCapability | null;
+  minute?: LeafCapability | null;
+  second?: LeafCapability | null;
+  microsecond?: LeafCapability | null;
+  millisecond?: LeafCapability | null;
+  nanosecond?: LeafCapability | null;
+  epoch?: LeafCapability | null;
+}
+export interface RelationalAggregateExpressionCapabilities {
+  avg?: LeafCapability | null;
+  bool_and?: LeafCapability | null;
+  bool_or?: LeafCapability | null;
+  count?: RelationalAggregateFunctionCapabilities | null;
+  first_value?: RelationalOrderedAggregateFunctionCapabilities | null;
+  last_value?: RelationalOrderedAggregateFunctionCapabilities | null;
+  max?: LeafCapability | null;
+  median?: LeafCapability | null;
+  min?: LeafCapability | null;
+  string_agg?: RelationalOrderedAggregateFunctionCapabilities | null;
+  string_agg_with_separator?: RelationalOrderedAggregateFunctionCapabilities | null;
+  sum?: LeafCapability | null;
+  var?: LeafCapability | null;
+  stddev?: LeafCapability | null;
+  stddev_pop?: LeafCapability | null;
+  approx_percentile_cont?: LeafCapability | null;
+  array_agg?: RelationalOrderedAggregateFunctionCapabilities | null;
+  approx_distinct?: LeafCapability | null;
+}
+export interface RelationalAggregateFunctionCapabilities {
+  distinct?: LeafCapability | null;
+}
+export interface RelationalOrderedAggregateFunctionCapabilities {
+  distinct?: LeafCapability | null;
+  order_by?: LeafCapability | null;
+}
+export interface RelationalWindowExpressionCapabilities {
+  row_number?: LeafCapability | null;
+  dense_rank?: LeafCapability | null;
+  ntile?: LeafCapability | null;
+  rank?: LeafCapability | null;
+  cume_dist?: LeafCapability | null;
+  percent_rank?: LeafCapability | null;
+}
+export interface RelationalScalarTypeCapabilities {
+  /**
+   * Does the connector support the INTERVAL scalar type? Both interval literals and casts to the INTERVAL type are implied by this capability.
+   */
+  interval?: LeafCapability | null;
+  /**
+   * Does the connector support `from_type` in cast?
+   */
+  from_type?: LeafCapability | null;
+}
+export interface RelationalSortCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+export interface RelationalJoinCapabilities {
+  expression: RelationalExpressionCapabilities;
+  join_types: RelationalJoinTypeCapabilities;
+}
+export interface RelationalJoinTypeCapabilities {
+  left?: LeafCapability | null;
+  right?: LeafCapability | null;
+  inner?: LeafCapability | null;
+  full?: LeafCapability | null;
+  left_semi?: LeafCapability | null;
+  left_anti?: LeafCapability | null;
+  right_semi?: LeafCapability | null;
+  right_anti?: LeafCapability | null;
+}
+export interface RelationalAggregateCapabilities {
+  expression: RelationalExpressionCapabilities;
+  group_by?: LeafCapability | null;
+}
+export interface RelationalWindowCapabilities {
+  expression: RelationalExpressionCapabilities;
+}
+/**
+ * Describes which features of the relational mutation API are supported by the connector. This feature is experimental and subject to breaking changes within minor versions.
+ */
+export interface RelationalMutationCapabilities {
+  insert?: LeafCapability | null;
+  update?: LeafCapability | null;
+  delete?: LeafCapability | null;
+}
 export interface SchemaResponse {
   /**
    * A list of scalar types which will be used as the types of collection columns
@@ -856,6 +1077,10 @@ export interface SchemaResponse {
    * Schema data which is relevant to features enabled by capabilities
    */
   capabilities?: CapabilitySchemaInfo | null;
+  /**
+   * Request level arguments which are required for queries and mutations
+   */
+  request_arguments?: RequestLevelArguments | null;
 }
 /**
  * The definition of a scalar type, i.e. types that can be used as the types of columns.
@@ -973,12 +1198,30 @@ export interface CollectionInfo {
   uniqueness_constraints: {
     [k: string]: UniquenessConstraint;
   };
+  /**
+   * Information about relational mutation capabilities for this collection
+   */
+  relational_mutations?: RelationalMutationInfo | null;
 }
 export interface UniquenessConstraint {
   /**
    * A list of columns which this constraint requires to be unique
    */
   unique_columns: string[];
+}
+export interface RelationalMutationInfo {
+  /**
+   * Whether inserts are supported for this collection
+   */
+  insertable: boolean;
+  /**
+   * Whether updates are supported for this collection
+   */
+  updatable: boolean;
+  /**
+   * Whether deletes are supported for this collection
+   */
+  deletable: boolean;
 }
 export interface FunctionInfo {
   /**
@@ -1038,6 +1281,26 @@ export interface AggregateCapabilitiesSchemaInfo {
    */
   count_scalar_type: string;
 }
+export interface RequestLevelArguments {
+  /**
+   * Any arguments that all Query requests require
+   */
+  query_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+  /**
+   * Any arguments that all Mutation requests require
+   */
+  mutation_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+  /**
+   * Any arguments that all Relational Query requests require
+   */
+  relational_query_arguments: {
+    [k: string]: ArgumentInfo;
+  };
+}
 /**
  * This is the request body of the query POST endpoint
  */
@@ -1070,6 +1333,12 @@ export interface QueryRequest {
         [k: string]: unknown;
       }[]
     | null;
+  /**
+   * Values to be provided to request-level arguments.
+   */
+  request_arguments?: {
+    [k: string]: unknown;
+  } | null;
 }
 export interface Query {
   /**
@@ -1253,6 +1522,12 @@ export interface MutationRequest {
   collection_relationships: {
     [k: string]: Relationship;
   };
+  /**
+   * Values to be provided to request-level arguments.
+   */
+  request_arguments?: {
+    [k: string]: unknown;
+  } | null;
 }
 export interface MutationResponse {
   /**
