@@ -2,7 +2,8 @@
 
 ## Unreleased changes
 
-- Require patched Node.js 22.23.4 / 24.22.1 / 26.12.1 release lines and use Node 24.22.1 for SDK development and CI.
+- Use Node 24.22.1 for SDK development and CI; consumer Node compatibility is unchanged.
+- Require @grpc/grpc-js 1.14.6+ for upstream security fixes (GHSA-f596-whhp-79r4 and GHSA-m9gg-hp2v-232j). This does not replace the Node runtime's TLS trust updates.
 
 ## [8.5.0] - 2026-03-06
 - Made the Fastify body limit configurable via `--body-limit` CLI option or `HASURA_BODY_LIMIT` environment variable (default: 30MB)
