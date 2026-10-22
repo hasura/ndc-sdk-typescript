@@ -2,6 +2,7 @@
 
 ## Unreleased changes
 
+## [8.5.1] - 2026-10-22
 - Use Node 24.22.1 for SDK development and CI; consumer Node compatibility is unchanged.
 - Require @grpc/grpc-js 1.14.6+ for upstream security fixes (GHSA-f596-whhp-79r4 and GHSA-m9gg-hp2v-232j). This does not replace the Node runtime's TLS trust updates.
 
