@@ -21,8 +21,23 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail build on High/Critical Vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: package-lock.json
+          format: table
+          severity: CRITICAL,HIGH
+          scanners: vuln
+          ignore-unfixed: true
+          exit-code: 1
+
   publish:
-    needs: build
+    needs: [build, trivy]
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     steps:
