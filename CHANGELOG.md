@@ -2,6 +2,9 @@
 
 ## Unreleased changes
 
+## [8.5.2] - 2026-10-26
+- Updated OpenTelemetry packages (`sdk-node` and OTLP exporters 0.220, `resources`/`sdk-metrics` 2.9) and refreshed transitive dependencies to fix CVE-2026-44902, CVE-2026-59892 and CVE-2026-41242 (protobufjs)
+
 ## [8.5.1] - 2026-10-22
 - Use Node 24.22.1 for SDK development and CI; consumer Node compatibility is unchanged.
 - Require @grpc/grpc-js 1.14.6+ for upstream security fixes (GHSA-f596-whhp-79r4 and GHSA-m9gg-hp2v-232j). This does not replace the Node runtime's TLS trust updates.
